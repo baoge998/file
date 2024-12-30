@@ -44,6 +44,21 @@
             min-width :280px;
             margin-top :6px;
         }
+        #loading {
+            position: fixed;
+            width: 100vw;
+            height: 100vh;
+            left: 0;
+            top: 0;
+            background-color:#000;
+            opacity:.8;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#ff9000;
+            z-index :9;
+            font-size :20px;
+        }
     </style>
 </head>
 <body>
@@ -51,10 +66,7 @@
     
     <h4>根域名：<input type="text" value="" id="rootdm" /></h4>
     
-    <div id="btn-wrap">
-        <button onclick="updateRepo()">设置Repo</button>
-        <button onclick="updateToken()">设置Token</button>
-    </div>
+    <div id="btn-wrap"></div>
 
     <h2>当前目录：<i id="repo"></i>
         <span onclick="addDir()" class="back">新建目录</span>
@@ -107,111 +119,17 @@
         
         if (!baseToken) alert("请先设置仓库和token");
 
-        function initFileList(searchVal = '') {
-            let rootdm = document.getElementById("rootdm").value || "";
-            let tempList = window.fileList;
+        let paths = [];
 
-            if (searchVal && searchVal.trim()) {
-                tempList = window.fileList.filter(item => item.name.includes(searchVal.trim()));
-            }
+        function initBtn() {
+            let btnEl = document.getElementById("btn-wrap");
+            
+            const urls = [
+                { name:"本站", url : location.href },
+                { name:"gitmirror加速", url : `https://raw.gitmirror.com/${baseRepo}/master/` },
+                { name:"jsdelivr加速", url : `https://gcore.jsdelivr.net/gh/${baseRepo}@master/` },
+                { name:"jsdelivr1加速", url : `https://cdn.jsdelivr.net/gh/${baseRepo}/` },
+            ];
 
-            document.getElementById("file_list").innerHTML = tempList.map(item => `
-                <li class="${item.ftype}" data-id="${item.sha}">
-                    <a target="_blank" href="${rootdm}${item.path}">${item.name}</a>
-                    <span class='sha'>${item.sha}</span>
-                    <span class='size'>${getUnit(item.size)}</span> 
-                    <i onclick='delOne("${item.path}", "${item.sha}")'>删除</i> 
-                </li>`).join("");
-
-            document.getElementById("repo").innerHTML = baseRepo + "/" + (paths.length ? paths[paths.length - 1] : "");
-        }
-
-       // 初始化根目录
-       if (baseToken) getDir("", true);
-
-       function getDir(path, isRoot) {
-           if (!path && !isRoot) return;
-           showLoading();
-           getContent(path + "?t="+new Date().getTime()).then(data => {
-               window.fileList = (data || []).filter(d => d.name != "init.jpg").map(item => {
-                   item.ftype = getType(item.name);
-                   return item;
-               });
-               initFileList();
-           });
-       }
-
-       function addDir() {
-           const val = prompt("请输入新建目录名称, 基于根目录, 不以/开头", "");
-           if (val) putDir(val);
-       }
-
-       function dirBack() {
-           if (!paths.length) return alert("已经是根目录了!");
-           paths.pop();
-           getDir(paths.length ? paths[paths.length - 1] : "", true);
-       }
-
-       function refresh() {
-           getDir(paths.length ? paths[paths.length - 1] : "", true);
-       }
-
-       function search(e) {
-           if (e.keyCode === 13) initFileList(document.getElementById("search").value);
-       }
-
-       function delOne(path, sha) {
-           if (path === "index.html") return alert("主页index.html不能被删除!");
-           if (confirm(`是否确认删除该文件:${path}`)) delFile(path, sha);
-       }
-
-       document.getElementById("file").addEventListener("input", (e) => {
-           const file = e.target.files[0];
-           if (file) putFile(file.name, file);
-           document.getElementById("file").value = "";
-       });
-
-       function updateRepo() {
-           const val = prompt("请输入仓库 {owner}/{repo}", localStorage.getItem("GIT_REPO") || "dhjz/file");
-           if (val) localStorage.setItem("GIT_REPO", val);
-       }
-
-       function updateToken() {
-           const val = prompt("请输入token", localStorage.getItem("GIT_TOKEN") || "");
-           if (val) localStorage.setItem("GIT_TOKEN", val);
-       }
-
-       function getType(val) {
-           if (/\.(jpg|jpeg|png|gif)$/i.test(val)) return "img";
-           if (/\.(mp4|avi|mov|wmv|flv)$/i.test(val)) return "video";
-           if (/\.(mp3|wav|wma|aac)$/i.test(val)) return "music";
-           if (/\.(doc|docx)$/i.test(val)) return "doc";
-           if (/\.(xls|xlsx)$/i.test(val)) return "xls";
-           if (/\.(ppt|pptx)$/i.test(val)) return "ppt";
-           if (/\.(pdf)$/i.test(val)) return "pdf";
-           return "other";
-       }
-
-       // 显示加载指示器
-       function showLoading() {
-           document.getElementById('loading').classList.remove('hide');
-       }
-
-       // 隐藏加载指示器
-       function hideLoading() {
-           document.getElementById('loading').classList.add('hide');
-       }
-
-       // 获取单位
-       function getUnit(size) {
-           if(size >=1024*1024) return (size / (1024 * 1024)).toFixed(2) + ' MB';
-           else if(size >=1024) return (size / 1024).toFixed(2) + ' KB';
-           else return size + ' B';
-       }
-
-   </script>
-
-   <!-- 添加其他必要的功能实现 -->
-
-</body>
-</html>
+            urls.forEach((temp, j) => {
+                cons
