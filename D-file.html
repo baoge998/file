@@ -11,7 +11,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { padding: 20px 0 10px; background: #000; color: #fff; }
         body { font-size: 16px; max-width: 80%; margin: 0 auto; }
-        h2 { margin-bottom: 10px; }
+        h2 { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #333; }
         .back { display: inline-block; border: 1px solid #ff9000; padding: 4px 12px; font-size: 15px; cursor: pointer; margin-left: 20px; background: #ff9000; color: #000; border-radius: 3px; transition: all 0.2s; }
         .back:hover { background: #000; color: #ff9000; }
         input.back { cursor: auto; background: #1b1b1b; border: 1px solid #333; color: #fff; }
@@ -26,10 +26,28 @@
             input#search { display: inline-block; margin-top: 10px; }
             button { margin-top: 6px; }
         }
+        input, button { 
+            background-color: #1b1b1b;
+            border-radius: 3px;
+            border-color:#333;
+            color:#fff;
+            padding-left :10px;
+            padding-right :10px;
+            line-height :26px;
+            outline:none;
+            transition : all .2s;
+        }
+        input::placeholder {
+            color:#999;
+        }
+        input[type="text"] {
+            min-width :280px;
+            margin-top :6px;
+        }
     </style>
 </head>
 <body>
-    <p style="margin: 0">版本号：20250101-1 <span class="tip">测试延迟请在根目录上传<b>init.jpg</b>(50kb以内)</span></p>
+    <p style="margin-bottom:20px;">版本号：20250101-1 <span class="tip">测试延迟请在根目录上传<b>init.jpg</b>(50kb以内)</span></p>
     <h4>根域名：<input type="text" value="" id="rootdm" /></h4>
 
     <h2>当前目录：<i id="repo"></i>
@@ -44,9 +62,6 @@
         </div>
         <span onclick="dirBack()" class="back">←返回</span>
         <span onclick="refresh()" class="back ftr">刷新</span>
-        <span onclick="toggleWrap()" class="back ftr">分列</span>
-        <span onclick="updateToken()" class="back ftr">设置Token</span>
-        <span onclick="updateRepo()" class="back ftr">设置Repo</span>
         <input type="text" class="back ftr" id="search" placeholder="关键词搜索, 回车确认" onkeyup="search(event)" />
     </h2>
 
@@ -67,3 +82,132 @@
 
     <!-- Preview Modal -->
     <div class="preview-modal">
+        <div class="preview-close">×</div>
+        <div class="preview-content"></div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" style="display:none;">
+        <div class="context-menu-item" data-action="preview">预览</div>
+        <div class="context-menu-item" data-action="copy">复制</div>
+        <div class="context-menu-item" data-action="move">移动</div>
+        <div class="context-menu-item" data-action="share">分享</div>
+        <div class="context-menu-item" data-action="delete">删除</div>
+    </div>
+
+    <script>
+        window.baseRepo = localStorage.getItem("GIT_REPO") || "dhjz/file";
+        window.baseToken = localStorage.getItem("GIT_TOKEN") || "";
+        
+        if (!baseToken) alert("请先设置仓库和token");
+
+        function initFileList(searchVal = '') {
+            let rootdm = document.getElementById("rootdm").value || "";
+            let tempList = window.fileList;
+
+            if (searchVal && searchVal.trim()) {
+                tempList = window.fileList.filter(item => item.name.includes(searchVal.trim()));
+            }
+
+            document.getElementById("file_list").innerHTML = tempList.map(item => `
+                <li class="${item.ftype}" data-id="${item.sha}">
+                    <a target="_blank" href="${rootdm}${item.path}" onclick="${item.type == 'dir' ? `getDir('${item.path}', false)` : ''}">${item.name}</a>
+                    <span class='sha'>${item.sha}</span>
+                    <span class='size'>${getUnit(item.size)}</span> 
+                    <i onclick='delOne("${item.path}", "${item.sha}")' class='del'>删除</i> 
+                </li>`).join("");
+
+            document.getElementById("repo").innerHTML = baseRepo + "/" + (paths.length ? paths[paths.length - 1] : "");
+        }
+
+       // 初始化根目录
+       if (baseToken) getDir("", true);
+
+       function getDir(path, isRoot, event) {
+           if (!path && !isRoot) return;
+           if (event) event.preventDefault();
+           showLoading();
+           getContent(path + "?t="+new Date().getTime()).then(data => {
+               window.fileList = (data || []).filter(d => d.name != "init.jpg").map(item => {
+                   item.ftype = getType(item.name);
+                   return item;
+               });
+               initFileList();
+           });
+       }
+
+       function addDir() {
+           const val = prompt("请输入新建目录名称, 基于根目录, 不以/开头", "");
+           if (val) putDir(val);
+       }
+
+       function dirBack() {
+           if (!paths.length) return alert("已经是根目录了!");
+           paths.pop();
+           getDir(paths.length ? paths[paths.length - 1] : "", true);
+       }
+
+       function refresh() {
+           getDir(paths.length ? paths[paths.length - 1] : "", true);
+       }
+
+       function search(e) {
+           if (e.keyCode === 13) initFileList(document.getElementById("search").value);
+       }
+
+       function delOne(path, sha) {
+           if (path === "index.html") return alert("主页index.html不能被删除!");
+           if (confirm(`是否确认删除该文件:${path}`)) delFile(path, sha);
+       }
+
+       document.getElementById("file").addEventListener("input", (e) => {
+           const file = e.target.files[0];
+           if (file) putFile(file.name, file);
+           document.getElementById("file").value = "";
+       });
+
+       function updateRepo() {
+           const val = prompt("请输入仓库 {owner}/{repo}", localStorage.getItem("GIT_REPO") || "dhjz/file");
+           if (val) localStorage.setItem("GIT_REPO", val);
+       }
+
+       function updateToken() {
+           const val = prompt("请输入token", localStorage.getItem("GIT_TOKEN") || "");
+           if (val) localStorage.setItem("GIT_TOKEN", val);
+       }
+
+       // 获取文件类型
+       function getType(val) {
+           if (/\.(jpg|jpeg|png|gif)$/i.test(val)) return "img";
+           if (/\.(mp4|avi|mov|wmv|flv)$/i.test(val)) return "video";
+           if (/\.(mp3|wav|wma|aac)$/i.test(val)) return "music";
+           if (/\.(doc|docx)$/i.test(val)) return "doc";
+           if (/\.(xls|xlsx)$/i.test(val)) return "xls";
+           if (/\.(ppt|pptx)$/i.test(val)) return "ppt";
+           if (/\.(pdf)$/i.test(val)) return "pdf";
+           return "other";
+       }
+
+       // 显示加载指示器
+       function showLoading() {
+           document.getElementById('loading').classList.remove('hide');
+       }
+
+       // 隐藏加载指示器
+       function hideLoading() {
+           document.getElementById('loading').classList.add('hide');
+       }
+
+       // 获取单位
+       function getUnit(size) {
+           if(size >=1024*1024) return (size / (1024 * 1024)).toFixed(2) + ' MB';
+           else if(size >=1024) return (size / 1024).toFixed(2) + ' KB';
+           else return size + ' B';
+       }
+
+   </script>
+
+   <!-- 添加其他必要的功能实现 -->
+
+</body>
+</html>
