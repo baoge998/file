@@ -11,7 +11,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { padding: 20px 0 10px; background: #000; color: #fff; }
         body { font-size: 16px; max-width: 80%; margin: 0 auto; }
-        h2 { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #333; }
+        h2 { margin-bottom: 10px; }
         .back { display: inline-block; border: 1px solid #ff9000; padding: 4px 12px; font-size: 15px; cursor: pointer; margin-left: 20px; background: #ff9000; color: #000; border-radius: 3px; transition: all 0.2s; }
         .back:hover { background: #000; color: #ff9000; }
         input.back { cursor: auto; background: #1b1b1b; border: 1px solid #333; color: #fff; }
@@ -25,24 +25,6 @@
             .back.ftr { display: none; }
             input#search { display: inline-block; margin-top: 10px; }
             button { margin-top: 6px; }
-        }
-        input, button {
-            background-color: #1b1b1b;
-            border-radius: 3px;
-            border-color:#333;
-            color:#fff;
-            padding-left :10px;
-            padding-right :10px;
-            line-height :26px;
-            outline:none;
-            transition : all .2s;
-        }
-        input::placeholder {
-            color:#999;
-        }
-        input[type="text"] {
-            min-width :280px;
-            margin-top :6px;
         }
         #loading {
             position: fixed;
@@ -85,7 +67,8 @@
         <ul class="file_list" id="file_list">加载中...</ul>
     </div>
 
-    <input type="file" id="file" class="filepond" name="filepond" style="display:none;" />
+    <!-- Hidden file input for uploading -->
+    <input type="file" id="file" style="display:none;" />
 
     <!-- Loading Indicator -->
     <div id="loading" class="hide">处理中...</div>
@@ -119,24 +102,24 @@
 
         let paths = [];
 
-        function initFileList(searchVal = '') {
-            let rootdm = document.getElementById("rootdm").value || "";
-            let tempList = window.fileList;
+       function initFileList(searchVal = '') {
+           let rootdm = document.getElementById("rootdm").value || "";
+           let tempList = window.fileList;
 
-            if (searchVal && searchVal.trim()) {
-                tempList = window.fileList.filter(item => item.name.includes(searchVal.trim()));
-            }
+           if (searchVal && searchVal.trim()) {
+               tempList = window.fileList.filter(item => item.name.includes(searchVal.trim()));
+           }
 
-            document.getElementById("file_list").innerHTML = tempList.map(item => `
-                <li class="${item.ftype}" data-id="${item.sha}">
-                    <a target="_blank" href="${rootdm}${item.path}">${item.name}</a>
-                    <span class='sha'>${item.sha}</span>
-                    <span class='size'>${getUnit(item.size)}</span> 
-                    <i onclick='delOne("${item.path}", "${item.sha}")'>删除</i> 
-                </li>`).join("");
+           document.getElementById("file_list").innerHTML = tempList.map(item => `
+               <li class="${item.ftype}" data-id="${item.sha}">
+                   <a target="_blank" href="${rootdm}${item.path}">${item.name}</a>
+                   <span class='sha'>${item.sha}</span>
+                   <span class='size'>${getUnit(item.size)}</span> 
+                   <i onclick='delOne("${item.path}", "${item.sha}")'>删除</i> 
+               </li>`).join("");
 
-            document.getElementById("repo").innerHTML = baseRepo + "/" + (paths.length ? paths[paths.length - 1] : "");
-        }
+           document.getElementById("repo").innerHTML = baseRepo + "/" + (paths.length ? paths[paths.length - 1] : "");
+       }
 
        // 初始化根目录
        if (baseToken) getDir("", true);
@@ -148,3 +131,106 @@
            
            getContent(path + "?t="+new Date().getTime()).then(data => {
                window.fileList = (data || []).filter(d => d.name != "init.jpg").map(item => {
+                   item.ftype = getType(item.name);
+                   return item;
+               });
+               initFileList();
+           });
+       }
+
+       function addDir() {
+           const val = prompt("请输入新建目录名称, 基于根目录, 不以/开头", "");
+           if (val) putDir(val);
+       }
+
+       function dirBack() {
+           if (!paths.length) return alert("已经是根目录了!");
+           paths.pop();
+           getDir(paths.length ? paths[paths.length - 1] : "", true);
+       }
+
+       function refresh() {
+           getDir(paths.length ? paths[paths.length - 1] : "", true);
+       }
+
+       function search(e) {
+           if (e.keyCode === 13) initFileList(document.getElementById("search").value);
+       }
+
+       function delOne(path, sha) {
+           if (path === "index.html") return alert("主页index.html不能被删除!");
+           if (confirm(`是否确认删除该文件:${path}`)) delFile(path, sha);
+       }
+
+       document.getElementById("file").addEventListener("change", (e) => {
+           const file = e.target.files[0];
+           if (file) putFile(file.name, file);
+           document.getElementById("file").value = "";
+       });
+
+       function updateRepo() {
+           const val = prompt("请输入仓库 {owner}/{repo}", localStorage.getItem("GIT_REPO") || "dhjz/file");
+           if (val) localStorage.setItem("GIT_REPO", val);
+       }
+
+       function updateToken() {
+           const val = prompt("请输入token", localStorage.getItem("GIT_TOKEN") || "");
+           if (val) localStorage.setItem("GIT_TOKEN", val);
+       }
+
+       function putFile(path, file) {
+           console.log("upload file:", file);
+
+           getSha(path).then(sha => {
+               if (sha && !window.confirm("已存在该文件, 是否覆盖?")) return;
+
+               showLoading();
+
+               const reader = new FileReader();
+               reader.readAsArrayBuffer(file);
+
+               reader.onload = async () => {
+                   const arrayBuffer = reader.result;
+
+                   const blob = new Blob([arrayBuffer], { type:file.type });
+                   const content = await blob.arrayBuffer();
+
+                   const data = {
+                       message:`${now()} update ${path}`,
+                       path,
+                       content:btoa(chunkChar(new Uint8Array(content))),
+                       sha,
+                   };
+
+                   request.put(`/repos/${baseRepo}/contents/${path}`, data)
+                       .then(() => alert(`上传成功:${path}, 大小:${getUnit(file.size)}`))
+                       .then(refresh);
+               };
+           });
+       }
+
+      // ...其余函数保持不变
+
+      // 显示加载指示器
+      function showLoading() {
+          document.getElementById('loading').classList.remove('hide');
+      }
+
+      // 隐藏加载指示器
+      function hideLoading() {
+          document.getElementById('loading').classList.add('hide');
+      }
+
+      // 获取单位
+      function getUnit(size){
+          if(size >=1024*1024)return(size/(1024*1024)).toFixed(2)+' MB';
+          else if(size >=1024)return(size/1024).toFixed(2)+' KB';
+          else return size+' B';
+      }
+
+   </script>
+
+   <!-- 添加其他必要的功能实现 -->
+
+</body>
+</html>
