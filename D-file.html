@@ -26,7 +26,7 @@
             input#search { display: inline-block; margin-top: 10px; }
             button { margin-top: 6px; }
         }
-        input, button { 
+        input, button {
             background-color: #1b1b1b;
             border-radius: 3px;
             border-color:#333;
@@ -48,7 +48,13 @@
 </head>
 <body>
     <p style="margin-bottom:20px;">版本号：20250101-1 <span class="tip">测试延迟请在根目录上传<b>init.jpg</b>(50kb以内)</span></p>
+    
     <h4>根域名：<input type="text" value="" id="rootdm" /></h4>
+    
+    <div id="btn-wrap">
+        <button onclick="updateRepo()">设置Repo</button>
+        <button onclick="updateToken()">设置Token</button>
+    </div>
 
     <h2>当前目录：<i id="repo"></i>
         <span onclick="addDir()" class="back">新建目录</span>
@@ -111,10 +117,10 @@
 
             document.getElementById("file_list").innerHTML = tempList.map(item => `
                 <li class="${item.ftype}" data-id="${item.sha}">
-                    <a target="_blank" href="${rootdm}${item.path}" onclick="${item.type == 'dir' ? `getDir('${item.path}', false)` : ''}">${item.name}</a>
+                    <a target="_blank" href="${rootdm}${item.path}">${item.name}</a>
                     <span class='sha'>${item.sha}</span>
                     <span class='size'>${getUnit(item.size)}</span> 
-                    <i onclick='delOne("${item.path}", "${item.sha}")' class='del'>删除</i> 
+                    <i onclick='delOne("${item.path}", "${item.sha}")'>删除</i> 
                 </li>`).join("");
 
             document.getElementById("repo").innerHTML = baseRepo + "/" + (paths.length ? paths[paths.length - 1] : "");
@@ -123,9 +129,8 @@
        // 初始化根目录
        if (baseToken) getDir("", true);
 
-       function getDir(path, isRoot, event) {
+       function getDir(path, isRoot) {
            if (!path && !isRoot) return;
-           if (event) event.preventDefault();
            showLoading();
            getContent(path + "?t="+new Date().getTime()).then(data => {
                window.fileList = (data || []).filter(d => d.name != "init.jpg").map(item => {
@@ -176,7 +181,6 @@
            if (val) localStorage.setItem("GIT_TOKEN", val);
        }
 
-       // 获取文件类型
        function getType(val) {
            if (/\.(jpg|jpeg|png|gif)$/i.test(val)) return "img";
            if (/\.(mp4|avi|mov|wmv|flv)$/i.test(val)) return "video";
