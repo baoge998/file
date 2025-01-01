@@ -25,3 +25,11 @@ https://raw.githubusercontent.com/10086-10000/test-ip/refs/heads/main/ip.txt
 2606:4700:85dd:7414:7f29:c694:b810:fc8a,MRS,Europe,Marseille,260 ms
 2606:4700:8cae:f395:925a:54dc:5c65:7fa4,MRS,Europe,Marseille,264 ms
 2606:4700:8d75:4245:42c6:124c:6a54:a2fa,MRS,Europe,Marseille,264 ms
+
+5、ADDNOTLSAPI
+
+https://raw.githubusercontent.com/ymyuuu/IPDB/main/bestcf.txt
+https://addressesapi.090227.xyz/CloudFlareYes
+https://addressesapi.090227.xyz/ip.164746.xyz
+https://ipdb.api.030101.xyz/?type=bestproxy&country=true
+https://ipdb.api.030101.xyz/?type=bestcf&country=true
