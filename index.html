@@ -638,18 +638,7 @@
       // 初始化根目录
       if (baseToken) getDir("", true);
 
-      function initFileList() {
-            let rootdm = document.getElementById("rootdm").value || "";
-            document.getElementById("file_list").innerHTML = window.fileList.map((item) => {
-                const encodedPath = item.path.replace(/ /g, '%20');
-                return `<li class="${item.ftype}">
-                    <a target="_blank" href="${rootdm}${encodedPath}">${item.name}</a>
-                    <i onclick="moveFile('${encodedPath}')" class="move">移动</i>
-                </li>`;
-            }).join("");
-        }
-
-        function moveFile(filePath) {
+      function moveFile(filePath) {
             const targetDir = prompt("请输入目标目录（相对路径，不以/开头）:", "");
             if (targetDir) {
                 const newPath = `${targetDir}/${filePath.split('/').pop()}`; // 保持文件名
