@@ -523,7 +523,6 @@
         { name: "gh-proxy", url: `https://gh-proxy.com/https://raw.githubusercontent.com/${baseRepo}/master/` },
         { name: "ghproxy", url: `https://ghproxy.cc/https://raw.githubusercontent.com/${baseRepo}/master/` },
         { name: "cf-ghproxy", url: `https://cf.ghproxy.cc/https://raw.githubusercontent.com/${baseRepo}/master/` },
-        { name: "ghproxy.net", url: `https://ghproxy.net/https://raw.githubusercontent.com/${baseRepo}/master/` }
       ];
 
       // 添加调试日志
@@ -691,6 +690,12 @@
 
       function delOne(path, sha) {
         if (path == "index.html") return alert("主页index.html不能被删除!");
+        if (window.confirm("是否确认删除改文件: " + path)) {
+          delFile(path, sha, true);
+        }
+      }
+      function delOne(path, sha) {
+        if (path == "D-file.html") return alert("重要文件不能被删除!");
         if (window.confirm("是否确认删除改文件: " + path)) {
           delFile(path, sha, true);
         }
