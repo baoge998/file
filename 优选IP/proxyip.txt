@@ -1,0 +1,11 @@
+
+
+
+
+
+ADDAPI库已经更新，以后有时间随缘更新ip库，里面的优选ip基本都是高速ip。
+现在附上链接:
+https://raw.githubusercontent.com/10086-10000/test-ip/refs/heads/main/ip.txt
+如果要使用当前优选ip当做proxyip。
+在链接最后面添加?proxyip=true
+举个例https://raw.githubusercontent.com/10086-10000/test-ip/refs/heads/main/ip.txt?proxyip=true
