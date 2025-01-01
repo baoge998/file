@@ -3,6 +3,9 @@
 
 https://baogeyouxuan.pages.dev/ip.txt?token=baoge
 
+https://github.com/bbylw/CFCDN-Auto/blob/main/yx_ips.txt
+
+
 
 
 2、ADDAPI库已经更新，以后有时间随缘更新ip库，里面的优选ip基本都是高速ip。
