@@ -645,7 +645,10 @@
         getContent(path + "?t=" + new Date().getTime()).then((data) => {
           console.log(data);
           window.fileList = (data || [])
-            .filter((d) => d.name != "init.jpg"|"CNAME"|"D-file.html"|"index.html"|"json.html)
+            .filter((d) =>[ d.name != "init.jpg"|d.name != "init.jpg"|d.name != ""CNAME""|d.name != "init.jpg"|d.name != "init.jpg"|])
+
+            
+            |"CNAME"|"D-file.html"|"index.html"|"json.html)
             
             .map((item) => {
               item.ftype = getType(item.name);
