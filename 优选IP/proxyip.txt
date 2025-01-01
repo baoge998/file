@@ -3,7 +3,7 @@
 
 https://baogeyouxuan.pages.dev/ip.txt?token=baoge
 
-https://github.com/bbylw/CFCDN-Auto/blob/main/yx_ips.txt
+https://raw.githubusercontent.com/bbylw/CFCDN-Auto/refs/heads/main/yx_ips.txt
 
 
 
