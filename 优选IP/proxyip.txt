@@ -11,3 +11,17 @@ https://raw.githubusercontent.com/10086-10000/test-ip/refs/heads/main/ip.txt
 如果要使用当前优选ip当做proxyip。
 在链接最后面添加?proxyip=true
 举个例https://raw.githubusercontent.com/10086-10000/test-ip/refs/heads/main/ip.txt?proxyip=true
+
+
+3、美国IPV4优选结果：                                      172.66.45.7,SEA,North America,Seattle,168 ms            104.21.226.142,SEA,North America,Seattle,173 ms         162.159.43.15,SEA,North America,Seattle,173 ms                                                                  亚洲IPV4优选结果：                                      104.17.144.215,HKG,Asia Pacific,Hong Kong,76 ms         104.17.125.56,HKG,Asia Pacific,Hong Kong,144 ms         104.17.168.76,HKG,Asia Pacific,Hong Kong,146 ms                                                                 欧洲IPV4优选结果：                                      162.159.141.36,FRA,Europe,Frankfurt,242 ms              104.16.104.147,FRA,Europe,Frankfurt,243 ms
+162.159.142.225,FRA,Europe,Frankfurt,243 ms
+
+4、IPV6最佳可用节点如下（取前三名）：
+美国IPV6优选结果：                                      2a06:98c1:3121:9de0:9b8b:3bca:7c2c:8c2,SJC,North America,San Jose,153 ms                                        2606:4700:3033:b0f8:17e4:4d61:326f:9795,SEA,North America,Seattle,181 ms                                        2606:4700:3035:2136:39dc:1052:f5f4:a9d4,SEA,North America,Seattle,185 ms                                                                                                亚洲IPV6优选结果：                                      2a06:98c1:3120:8903:8dd3:2ad7:f783:c76f,HKG,Asia Pacific,Hong Kong,89 ms
+2606:4700:8ca1:6840:45bd:4c20:89c6:cf65,HKG,Asia Pacific,Hong Kong,90 ms
+2a06:98c1:56:25e8:ccc7:5abe:338f:c4eb,HKG,Asia Pacific,Hong Kong,90 ms
+
+欧洲IPV6优选结果：
+2606:4700:85dd:7414:7f29:c694:b810:fc8a,MRS,Europe,Marseille,260 ms
+2606:4700:8cae:f395:925a:54dc:5c65:7fa4,MRS,Europe,Marseille,264 ms
+2606:4700:8d75:4245:42c6:124c:6a54:a2fa,MRS,Europe,Marseille,264 ms
