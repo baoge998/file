@@ -638,28 +638,7 @@
       // 初始化根目录
       if (baseToken) getDir("", true);
 
-      function moveFile(filePath) {
-            const targetDir = prompt("请输入目标目录（相对路径，不以/开头）:", "");
-            if (targetDir) {
-                const newPath = `${targetDir}/${filePath.split('/').pop()}`; // 保持文件名
-                moveFileInRepo(filePath, newPath);
-            }
-        }
-
-        function moveFileInRepo(sourcePath, targetPath) {
-            const data = {
-                message: `Move file from ${sourcePath} to ${targetPath}`,
-                sha: await getSha(sourcePath),
-                content: "" // GitHub API requires this field
-            };
-            request.put(`/repos/${baseRepo}/contents/${targetPath}`, data).then(() => {
-                alert("文件已成功移动!");
-                refresh(); // 刷新文件列表
-            }).catch(err => {
-                console.error(err);
-                alert("移动文件失败，请检查路径和权限。");
-            });
-        }
+      
 
       function getDir(path, isRoot, event, isBack) {
         if (!path && !isRoot) return;
