@@ -645,7 +645,11 @@
         getContent(path + "?t=" + new Date().getTime()).then((data) => {
           console.log(data);
           window.fileList = (data || [])
-            .filter((d) => d.name != "init.jpg")
+            .filter((d) => d.name != "init.jpg",
+            .filter((d) => d.name != "CNAME",
+            .filter((d) => d.name != "D-file.html",
+            .filter((d) => d.name != "index.html", 
+            .filter((d) => d.name != "json.html",      )
             .map((item) => {
               item.ftype = getType(item.name);
               if (item.type == "dir") item.ftype = "dir";
