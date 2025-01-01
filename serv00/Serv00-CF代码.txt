@@ -1,0 +1,21 @@
+Serv00-CF代码
+
+
+bash <(curl -Ls  https://git.zsblog.eu.org/https://raw.githubusercontent.com/youtubexiaoli/Serv00-CF/refs/heads/main/serv00_proxyip.sh)
+
+
+
+serv00-play代码
+
+bash <(curl -Ls https://raw.githubusercontent.com/frankiejun/serv00-play/main/start.sh)
+
+
+
+
+
+安装nezha面板并添加监控
+
+bash <(curl -s https://raw.githubusercontent.com/k0baya/nezha4serv00/main/install-dashboard.sh)
+
+
+
