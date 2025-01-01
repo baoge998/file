@@ -644,13 +644,14 @@
         showLoading();
         getContent(path + "?t=" + new Date().getTime()).then((data) => {
           console.log(data);
-          window.fileList = (data || [])
-            .filter((d) => d.name != "init.jpg"|d.name != "init.jpg")
-           .map((item) => {
-              item.ftype = getType(item.name);
-              if (item.type == "dir") item.ftype = "dir";
-              return item;
-            });
+         window.fileList = (data || [])
+    .filter((d) => !["init.jpg", "CNAME", "D-file.html", "index.html", "json.html"].includes(d.name))
+    .map((item) => {
+        item.ftype = getType(item.name);
+        if (item.type == "dir") item.ftype = "dir";
+        return item;
+    });
+
           window.fileList.sort((a, b) => (a.type < b.type ? -1 : 1));
           if (path && !isBack) paths.push(path);
           initFileList();
