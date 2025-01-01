@@ -692,6 +692,7 @@
         if (path == "index.html") return alert("主页index.html不能被删除!");
         if (path == "D-file.html") return alert("重要文件不能被删除!");
         if (path == "CNAME") return alert("重要文件不能被删除!");
+        if (path == "json.html") return alert("重要文件不能被删除!");
         
         if (window.confirm("是否确认删除改文件: " + path)) {
           delFile(path, sha, true);
