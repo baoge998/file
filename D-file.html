@@ -202,6 +202,10 @@
         list-style-type: none;
       }
       @media screen and (max-width: 700px) {
+        body {
+          max-width: 95%;
+          padding: 0 10px;
+        }
         .file_list li span {
           display: none !important;
         }
@@ -211,9 +215,39 @@
         input#search {
           display: inline-block;
           margin: 10px 0 0;
+          min-width: 200px;
         }
         button {
           margin-top: 6px;
+        }
+        .file_list li {
+          width: 100% !important;
+          margin-right: 0 !important;
+          float: none !important;
+        }
+        h2 {
+          font-size: 16px;
+        }
+        .back {
+          padding: 2px 8px;
+          font-size: 13px;
+          margin-left: 10px;
+        }
+        #rootdm {
+          min-width: 200px;
+          width: 100%;
+          margin-bottom: 10px;
+        }
+        #btn-wrap {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 5px;
+          margin-top: 5px;
+        }
+        #btn-wrap button {
+          margin: 0;
+          font-size: 13px;
+          padding: 2px 8px;
         }
       }
       input {
@@ -286,82 +320,68 @@
         z-index: 9;
         font-size: 20px;
       }
-      .dropzone {
-        border: 2px dashed #ff9000;
-        border-radius: 5px;
-        padding: 20px;
-        text-align: center;
-        margin: 20px 0;
-        transition: all 0.3s;
-      }
-      .dropzone.dragover {
+      .drag-hint {
         background: rgba(255, 144, 0, 0.1);
+        padding: 8px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        border: 1px dashed #ff9000;
+        color: #ff9000;
+        text-align: center;
+        animation: pulse 2s infinite;
       }
-      .preview-modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        z-index: 1000;
+      @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
       }
-      .preview-content {
+      #drop-zone {
+        transition: all 0.3s ease;
+        position: relative;
+      }
+      #drop-zone.dragover {
+        background: rgba(255, 144, 0, 0.1) !important;
+      }
+      #drop-zone.dragover:after {
+        content: '可以拖放多个文件到这里上传';
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        max-width: 90%;
-        max-height: 90%;
-      }
-      .preview-close {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        color: #fff;
         font-size: 24px;
-        cursor: pointer;
+        color: #ff9000;
+        pointer-events: none;
       }
-      .context-menu {
-        position: fixed;
-        background: #1b1b1b;
-        border: 1px solid #333;
-        border-radius: 3px;
-        padding: 5px 0;
-        z-index: 1000;
+      .empty-folder-hint {
+        text-align: center;
+        padding: 40px 20px;
+        border: 2px dashed #ff9000;
+        border-radius: 8px;
+        margin: 20px 0;
+        background: rgba(255, 144, 0, 0.05);
+        transition: all 0.3s ease;
       }
-      .context-menu-item {
-        padding: 8px 15px;
-        cursor: pointer;
-        color: #fff;
-      }
-      .context-menu-item:hover {
-        background: #ff9000;
-        color: #000;
-      }
-      .file-actions {
-        display: none;
-        position: absolute;
-        background: #1b1b1b;
-        border: 1px solid #333;
-        padding: 10px;
-        border-radius: 3px;
-      }
-      .selected {
+      .empty-folder-hint:hover {
         background: rgba(255, 144, 0, 0.1);
       }
+      .empty-folder-hint i {
+        font-size: 40px;
+        color: #ff9000;
+        margin-bottom: 15px;
+        display: block;
+      }
       @media screen and (max-width: 700px) {
-        .dropzone {
-          padding: 10px;
-        }
-        body {
-          max-width: 95%;
+        #drop-zone.dragover:after {
+          font-size: 16px;
         }
       }
     </style>
   </head>
   <body>
+    <div id="drop-zone" style="min-height: calc(100vh - 200px); position: relative;" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+    <div class="drag-hint">
+      💡 支持拖拽上传：直接将文件拖放到页面任意位置即可上传
+    </div>
     <p style="margin: 0">
       版本号: 20250101-1
       <span class="tip">测试延迟请在根目录上传<b>init.jpg</b>(50kb以内)</span>
@@ -377,19 +397,6 @@
       <span onclick="document.getElementById('file').click()" class="back"
         >上传文件</span
       >
-      <div
-        id="batch-operations"
-        style="display: inline-block; margin-left: 10px"
-      >
-        <span onclick="batchDelete()" class="back">批量删除</span>
-        <span onclick="batchMove()" class="back">批量移动</span>
-        <span onclick="batchCopy()" class="back">批量复制</span>
-        <span onclick="shareFiles()" class="back">批量分享</span>
-        <span
-          id="selected-count"
-          style="margin-left: 10px; color: #ff9000"
-        ></span>
-      </div>
       <span onclick="dirBack()" class="back">←返回</span>
       <span onclick="refresh()" class="back ftr">刷新</span>
       <span onclick="toggleWrap()" class="back ftr">分列</span>
@@ -410,21 +417,6 @@
       </ul>
     </div>
     <div id="loading" class="hide">处理中...</div>
-    <div class="dropzone">
-      拖拽文件到此处上传 或 点击选择文件
-      <input type="file" id="fileInput" multiple style="display: none" />
-    </div>
-    <div class="preview-modal">
-      <div class="preview-close">×</div>
-      <div class="preview-content"></div>
-    </div>
-    <div class="context-menu" style="display: none">
-      <div class="context-menu-item" data-action="preview">预览</div>
-      <div class="context-menu-item" data-action="copy">复制</div>
-      <div class="context-menu-item" data-action="move">移动</div>
-      <div class="context-menu-item" data-action="share">分享</div>
-      <div class="context-menu-item" data-action="delete">删除</div>
-    </div>
 
     <script>
       window.baseRepo = localStorage.getItem("GIT_REPO") || "dhjz/file";
@@ -436,7 +428,7 @@
         wrap.className = wrap.className ? "" : "w50";
       }
       let urls = [
-        { name: "本站", url: `https://json.baoge888.rr.nu/` },
+        { name: "本站", url: location.href },
         {
           name: "gitmirror加速",
           url: `https://raw.gitmirror.com/${baseRepo}/master/`,
@@ -510,12 +502,10 @@
             item.name.includes(searchVal.trim())
           );
         }
-        if (window.fileList.length)
+        if (window.fileList.length) {
           document.getElementById("file_list").innerHTML = tempList
             .map((item) => {
-              return `<li class="file ${
-                item.ftype
-              }" onclick="toggleFileSelection(this)" data-id="${item.sha}">
+              return `<li class="file ${item.ftype}">
             <a target="_blank" href="${rootdm}${item.path}" onclick="getDir('${
                 item.type == "dir" ? item.path : ""
               }', false, event)">${item.name}</a><span class='sha'>${
@@ -527,6 +517,17 @@
           </li>`;
             })
             .join("");
+        } else {
+          document.getElementById("file_list").innerHTML = `
+            <div class="empty-folder-hint">
+              <i>📁</i>
+              <p>当前文件夹为空</p>
+              <p style="margin-top: 10px; font-size: 14px; color: #999;">
+                拖放文件到这里上传，或点击顶部的"上传文件"按钮
+              </p>
+            </div>
+          `;
+        }
 
         document.getElementById("repo").innerHTML =
           baseRepo + "/" + (paths.length ? paths[paths.length - 1] : "");
@@ -697,36 +698,167 @@
           });
       }
 
-      function putFile(path, file) {
-        console.log("upload file:", file);
-        getSha(path).then((sha) => {
-          if (sha && !window.confirm("已存在改文件, 是否覆盖?")) return;
-          // if (sha && window.confirm('是否自动重命名?')) path = (new Date().getTime() + '').substr(0, 10) + '_' + path
-          showLoading();
-          const reader = new FileReader();
-          reader.readAsArrayBuffer(file);
-          reader.onload = async () => {
-            const arrayBuffer = reader.result;
-            const blob = new Blob([arrayBuffer], { type: file.type });
-            const content = await blob.arrayBuffer();
-            const data = {
-              message: now() + " update " + path,
-              path: path,
-              content: btoa(chunkChar(new Uint8Array(content))),
-              sha,
+      // 添加文件上传队列管理
+      class UploadQueue {
+        constructor(concurrency = 3) {
+          this.queue = [];
+          this.running = 0;
+          this.concurrency = concurrency;
+          this.results = [];
+        }
+
+        add(file, targetPath) {
+          return new Promise((resolve, reject) => {
+            this.queue.push({
+              file,
+              targetPath,
+              resolve,
+              reject,
+              retries: 0
+            });
+            this.processNext();
+          });
+        }
+
+        async processNext() {
+          if (this.running >= this.concurrency || this.queue.length === 0) return;
+          
+          this.running++;
+          const task = this.queue.shift();
+          const { file, targetPath, resolve, reject, retries } = task;
+
+          try {
+            await this.uploadFile(file, targetPath, retries);
+            this.results.push({ success: true, file: file.name });
+            resolve();
+          } catch (error) {
+            console.error(`上传失败 (重试次数: ${retries}):`, error);
+            if (retries < 3) {
+              console.log(`重试上传: ${file.name}`);
+              this.queue.push({...task, retries: retries + 1});
+            } else {
+              this.results.push({ success: false, file: file.name, error });
+              reject(error);
+            }
+          } finally {
+            this.running--;
+            this.processNext();
+          }
+        }
+
+        async uploadFile(file, targetPath, retryCount) {
+          const sha = await getSha(targetPath);
+          if (sha && !window.confirm(`已存在该文件: ${targetPath}, 是否覆盖?`)) {
+            throw new Error('用户取消覆盖');
+          }
+
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsArrayBuffer(file);
+            
+            reader.onload = async () => {
+              try {
+                const arrayBuffer = reader.result;
+                const blob = new Blob([arrayBuffer], { type: file.type });
+                const content = await blob.arrayBuffer();
+                const data = {
+                  message: now() + " update " + targetPath,
+                  content: btoa(chunkChar(new Uint8Array(content))),
+                  sha,
+                };
+
+                await request.put(`/repos/${baseRepo}/contents/${targetPath}`, data, {
+                  headers: { "Content-Type": file.type }
+                });
+                resolve();
+              } catch (err) {
+                reject(err);
+              }
             };
-            request
-              .put(`/repos/${baseRepo}/contents/${path}`, data, {
-                headers: {
-                  "Content-Type": file.type,
-                },
-              })
+            
+            reader.onerror = (err) => reject(err);
+          });
+        }
+
+        isComplete() {
+          return this.queue.length === 0 && this.running === 0;
+        }
+
+        getResults() {
+          return this.results;
+        }
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        document.getElementById('drop-zone').classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length === 0) return;
+
+        const uploadQueue = new UploadQueue(3); // 最多3个并发上传
+        showLoading(`准备上传 ${files.length} 个文件...`);
+        console.log('开始处理拖拽的文件:', files.length, '个文件');
+        
+        let processed = 0;
+        const totalFiles = files.length;
+        const promises = [];
+
+        Array.from(files).forEach((file, index) => {
+          const targetPath = paths.length
+            ? paths[paths.length - 1] + "/" + file.name
+            : file.name;
+          
+          promises.push(
+            uploadQueue.add(file, targetPath)
               .then(() => {
-                alert("上传成功:" + path + ", 大小:" + getUnit(file.size));
-                refresh();
-              });
-          };
+                processed++;
+                console.log(`文件 ${file.name} 上传成功，已处理 ${processed}/${totalFiles}`);
+                showLoading(`正在上传第 ${processed}/${totalFiles} 个文件...`);
+              })
+              .catch(err => {
+                console.error(`文件 ${file.name} 上传失败:`, err);
+              })
+          );
         });
+
+        // 等待所有文件处理完成
+        Promise.allSettled(promises).then(() => {
+          const results = uploadQueue.getResults();
+          const successful = results.filter(r => r.success).length;
+          const failed = results.filter(r => !r.success).length;
+          
+          if (failed > 0) {
+            const failedFiles = results.filter(r => !r.success).map(r => r.file).join(', ');
+            alert(`上传完成。\n成功: ${successful} 个文件\n失败: ${failed} 个文件\n\n失败的文件: ${failedFiles}`);
+          } else {
+            alert(`所有文件上传成功！共 ${successful} 个文件。`);
+          }
+          
+          setTimeout(() => {
+            refresh();
+            hideLoading();
+          }, 1000);
+        });
+      }
+
+      function putFile(path, file) {
+        const uploadQueue = new UploadQueue(1);
+        showLoading(`正在上传: ${path}`);
+        
+        uploadQueue.add(file, path)
+          .then(() => {
+            alert("上传成功:" + path + ", 大小:" + getUnit(file.size));
+            refresh();
+          })
+          .catch(err => {
+            console.error("文件上传失败:", path, err);
+            alert("上传失败:" + path + ", 请重试");
+          })
+          .finally(() => {
+            hideLoading();
+          });
       }
 
       function chunkChar(arr) {
@@ -782,426 +914,17 @@
         document.getElementById("loading").className = "hide";
       }
 
-      // Drag and Drop functionality
-      const dropzone = document.querySelector(".dropzone");
-      const fileInput = document.getElementById("fileInput");
-
-      dropzone.addEventListener("click", () => fileInput.click());
-
-      dropzone.addEventListener("dragover", (e) => {
+      // Add drag and drop handlers
+      function handleDragOver(e) {
         e.preventDefault();
-        dropzone.classList.add("dragover");
-      });
+        e.stopPropagation();
+        document.getElementById('drop-zone').classList.add('dragover');
+      }
 
-      dropzone.addEventListener("dragleave", () => {
-        dropzone.classList.remove("dragover");
-      });
-
-      dropzone.addEventListener("drop", (e) => {
+      function handleDragLeave(e) {
         e.preventDefault();
-        dropzone.classList.remove("dragover");
-        const files = e.dataTransfer.files;
-        handleFiles(files);
-      });
-
-      fileInput.addEventListener("change", (e) => {
-        handleFiles(e.target.files);
-      });
-
-      function handleFiles(files) {
-        Array.from(files).forEach((file) => {
-          const path = paths.length
-            ? paths[paths.length - 1] + "/" + file.name
-            : file.name;
-          putFile(path, file);
-        });
-      }
-
-      // 批量删除功能
-      function batchDelete() {
-        const selectedItems = document.querySelectorAll(
-          ".file_list li.selected"
-        );
-        if (!selectedItems.length) {
-          alert("请先选择要删除的文件");
-          return;
-        }
-
-        if (confirm(`确定要删除选中的 ${selectedItems.length} 个文件吗？`)) {
-          selectedItems.forEach((item) => {
-            const path = item
-              .querySelector("a")
-              .getAttribute("href")
-              .split("/")
-              .pop();
-            const sha = item.querySelector(".sha").textContent;
-            delFile(path, sha, false);
-          });
-          selectedFiles.clear();
-        }
-      }
-
-      // 批量移动功能
-      function batchMove() {
-        const selectedItems = document.querySelectorAll(
-          ".file_list li.selected"
-        );
-        if (!selectedItems.length) {
-          alert("请先选择要移动的文件");
-          return;
-        }
-
-        const targetPath = prompt("请输入目标路径（相对于根目录）：");
-        if (!targetPath) return;
-
-        selectedItems.forEach((item) => {
-          const fileName = item.querySelector("a").textContent;
-          const currentPath = paths.length
-            ? paths[paths.length - 1] + "/" + fileName
-            : fileName;
-          const newPath = targetPath + "/" + fileName;
-
-          // 获取文件内容并在新位置创建
-          getContent(currentPath, true).then((response) => {
-            const data = {
-              message: now() + " move " + currentPath + " to " + newPath,
-              content: response.data.content,
-              sha: response.data.sha,
-            };
-
-            // 创建新文件
-            request
-              .put(`/repos/${baseRepo}/contents/${newPath}`, data)
-              .then(() => {
-                // 删除原文件
-                delFile(currentPath, response.data.sha, false);
-              });
-          });
-        });
-        selectedFiles.clear();
-      }
-
-      // 文件分享功能
-      function shareFiles() {
-        const selectedItems = document.querySelectorAll(
-          ".file_list li.selected"
-        );
-        if (!selectedItems.length) {
-          alert("请先选择要分享的文件");
-          return;
-        }
-
-        const rootdm = document.getElementById("rootdm").value || "";
-        let shareLinks = [];
-
-        selectedItems.forEach((item) => {
-          const fileName = item.querySelector("a").textContent;
-          const currentPath = paths.length
-            ? paths[paths.length - 1] + "/" + fileName
-            : fileName;
-          shareLinks.push(rootdm + currentPath);
-        });
-
-        const shareModal = document.createElement("div");
-        shareModal.style.cssText = `
-          position: fixed;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: #1b1b1b;
-          padding: 20px;
-          border-radius: 5px;
-          z-index: 1001;
-          max-width: 80%;
-          max-height: 80%;
-          overflow: auto;
-        `;
-
-        shareModal.innerHTML = `
-          <h3 style="margin-bottom: 10px">分享链接</h3>
-          <textarea style="width: 100%; min-width: 300px; height: 150px; margin-bottom: 10px; background: #000; color: #fff; padding: 10px;">${shareLinks.join(
-            "\n"
-          )}</textarea>
-          <button onclick="this.parentElement.remove()" style="float: right">关闭</button>
-        `;
-
-        document.body.appendChild(shareModal);
-      }
-
-      // 添加批量操作按钮
-      const batchButtons = `
-        <span onclick="batchDelete()" class="back" style="margin-right: 10px">批量删除</span>
-        <span onclick="batchMove()" class="back" style="margin-right: 10px">批量移动</span>
-        <span onclick="shareFiles()" class="back">分享文件</span>
-      `;
-
-      document
-        .querySelector("h2")
-        .insertAdjacentHTML("beforeend", batchButtons);
-
-      // 右键菜单处理
-      document.querySelector(".context-menu").addEventListener("click", (e) => {
-        const action = e.target.dataset.action;
-        const fileItem = document.querySelector(".file_list li:hover");
-        if (!fileItem) return;
-
-        switch (action) {
-          case "preview":
-            const fileType = fileItem.className.split(" ")[1];
-            const fileUrl = fileItem.querySelector("a").href;
-            previewFileByUrl(fileUrl, fileType);
-            break;
-          case "copy":
-          case "move":
-            const fileName = fileItem.querySelector("a").textContent;
-            const targetPath = prompt("请输入目标路径（相对于根目录）：");
-            if (!targetPath) return;
-
-            const currentPath = paths.length
-              ? paths[paths.length - 1] + "/" + fileName
-              : fileName;
-            const newPath = targetPath + "/" + fileName;
-
-            getContent(currentPath, true).then((response) => {
-              const data = {
-                message: now() + ` ${action} ` + currentPath + " to " + newPath,
-                content: response.data.content,
-                sha: response.data.sha,
-              };
-
-              request
-                .put(`/repos/${baseRepo}/contents/${newPath}`, data)
-                .then(() => {
-                  if (action === "move") {
-                    delFile(currentPath, response.data.sha, false);
-                  }
-                  refresh();
-                });
-            });
-            break;
-          case "share":
-            const shareUrl = fileItem.querySelector("a").href;
-            const shareModal = document.createElement("div");
-            shareModal.style.cssText = `
-              position: fixed;
-              top: 50%;
-              left: 50%;
-              transform: translate(-50%, -50%);
-              background: #1b1b1b;
-              padding: 20px;
-              border-radius: 5px;
-              z-index: 1001;
-            `;
-
-            shareModal.innerHTML = `
-              <h3 style="margin-bottom: 10px">分享链接</h3>
-              <input type="text" value="${shareUrl}" style="width: 100%; min-width: 300px; margin-bottom: 10px;" readonly>
-              <button onclick="this.parentElement.remove()" style="float: right">关闭</button>
-            `;
-
-            document.body.appendChild(shareModal);
-            break;
-          case "delete":
-            const path = fileItem
-              .querySelector("a")
-              .getAttribute("href")
-              .split("/")
-              .pop();
-            const sha = fileItem.querySelector(".sha").textContent;
-            if (confirm("确定要删除该文件吗？")) {
-              delFile(path, sha, true);
-            }
-            break;
-        }
-      });
-
-      // 文件预览功能
-      function previewFileByUrl(url, fileType) {
-        const modal = document.querySelector(".preview-modal");
-        const content = document.querySelector(".preview-content");
-
-        content.innerHTML = "";
-        modal.style.display = "block";
-
-        if (fileType === "img") {
-          const img = document.createElement("img");
-          img.src = url;
-          img.style.maxWidth = "100%";
-          content.appendChild(img);
-        } else if (fileType === "pdf") {
-          const iframe = document.createElement("iframe");
-          iframe.src = url;
-          iframe.style.width = "100%";
-          iframe.style.height = "90vh";
-          content.appendChild(iframe);
-        } else if (fileType === "txt" || fileType === "code") {
-          fetch(url)
-            .then((response) => response.text())
-            .then((text) => {
-              const pre = document.createElement("pre");
-              pre.textContent = text;
-              pre.style.color = "#fff";
-              pre.style.whiteSpace = "pre-wrap";
-              content.appendChild(pre);
-            });
-        } else if (fileType === "video") {
-          const video = document.createElement("video");
-          video.src = url;
-          video.controls = true;
-          video.style.maxWidth = "100%";
-          content.appendChild(video);
-        } else if (fileType === "music") {
-          const audio = document.createElement("audio");
-          audio.src = url;
-          audio.controls = true;
-          audio.style.width = "100%";
-          content.appendChild(audio);
-        } else {
-          const downloadLink = document.createElement("a");
-          downloadLink.href = url;
-          downloadLink.download = url.split("/").pop();
-          downloadLink.innerHTML = `
-            <div style="color: #fff; padding: 20px; text-align: center;">
-              <div style="margin-bottom: 20px;">此文件类型暂不支持预览</div>
-              <button class="back">点击下载</button>
-            </div>
-          `;
-          content.appendChild(downloadLink);
-        }
-      }
-
-      // Context Menu
-      document.addEventListener("contextmenu", (e) => {
-        const fileItem = e.target.closest(".file_list li");
-        if (fileItem) {
-          e.preventDefault();
-          const contextMenu = document.querySelector(".context-menu");
-          contextMenu.style.display = "block";
-          contextMenu.style.left = e.pageX + "px";
-          contextMenu.style.top = e.pageY + "px";
-        }
-      });
-
-      // Hide context menu on click outside
-      document.addEventListener("click", () => {
-        document.querySelector(".context-menu").style.display = "none";
-      });
-
-      // File Preview
-      function previewFile(file) {
-        const modal = document.querySelector(".preview-modal");
-        const content = document.querySelector(".preview-content");
-        const fileType = file.type.split("/")[0];
-
-        content.innerHTML = "";
-        modal.style.display = "block";
-
-        if (fileType === "image") {
-          const img = document.createElement("img");
-          img.src = URL.createObjectURL(file);
-          img.style.maxWidth = "100%";
-          content.appendChild(img);
-        } else if (
-          fileType === "application" &&
-          file.type === "application/pdf"
-        ) {
-          const iframe = document.createElement("iframe");
-          iframe.src = URL.createObjectURL(file);
-          iframe.style.width = "100%";
-          iframe.style.height = "90vh";
-          content.appendChild(iframe);
-        } else if (fileType === "text") {
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            const pre = document.createElement("pre");
-            pre.textContent = e.target.result;
-            pre.style.color = "#fff";
-            content.appendChild(pre);
-          };
-          reader.readAsText(file);
-        }
-      }
-
-      // Close preview modal
-      document.querySelector(".preview-close").addEventListener("click", () => {
-        document.querySelector(".preview-modal").style.display = "none";
-      });
-
-      // Batch operations
-      let selectedFiles = new Set();
-
-      function toggleFileSelection(element) {
-        if (element.classList.contains("dir")) return; // 不允许选择目录
-        element.classList.toggle("selected");
-        updateSelectedCount();
-      }
-
-      function updateSelectedCount() {
-        const selectedCount = document.querySelectorAll(
-          ".file_list li.selected"
-        ).length;
-        const countElement = document.getElementById("selected-count");
-        countElement.textContent = selectedCount
-          ? `已选择 ${selectedCount} 个文件`
-          : "";
-      }
-
-      // Add shift-click functionality for batch selection
-      let lastChecked = null;
-      document.addEventListener("click", (e) => {
-        const fileItem = e.target.closest(".file_list li");
-        if (fileItem && e.shiftKey && lastChecked) {
-          const items = Array.from(document.querySelectorAll(".file_list li"));
-          const start = items.indexOf(fileItem);
-          const end = items.indexOf(lastChecked);
-          items
-            .slice(Math.min(start, end), Math.max(start, end) + 1)
-            .forEach((item) => item.classList.add("selected"));
-        }
-        lastChecked = fileItem;
-      });
-
-      function batchCopy() {
-        const selectedItems = document.querySelectorAll(
-          ".file_list li.selected"
-        );
-        if (!selectedItems.length) {
-          alert("请先选择要复制的文件");
-          return;
-        }
-
-        const targetPath = prompt("请输入目标路径（相对于根目录）：");
-        if (!targetPath) return;
-
-        showLoading("正在复制文件...");
-        let completedCount = 0;
-
-        selectedItems.forEach((item) => {
-          const fileName = item.querySelector("a").textContent;
-          const currentPath = paths.length
-            ? paths[paths.length - 1] + "/" + fileName
-            : fileName;
-          const newPath = targetPath + "/" + fileName;
-
-          getContent(currentPath, true).then((response) => {
-            const data = {
-              message: now() + " copy " + currentPath + " to " + newPath,
-              content: response.data.content,
-              sha: response.data.sha,
-            };
-
-            request
-              .put(`/repos/${baseRepo}/contents/${newPath}`, data)
-              .then(() => {
-                completedCount++;
-                if (completedCount === selectedItems.length) {
-                  hideLoading();
-                  alert("批量复制完成");
-                  refresh();
-                }
-              });
-          });
-        });
+        e.stopPropagation();
+        document.getElementById('drop-zone').classList.remove('dragover');
       }
     </script>
 
