@@ -592,6 +592,12 @@
           delFile(path, sha, true);
         }
       }
+      function delOne(path, sha) {
+        if (path == "D-file.html") return alert("主页D-file.html不能被删除!");
+        if (window.confirm("是否确认删除改文件: " + path)) {
+          delFile(path, sha, true);
+        }
+      }
 
       // putContent('ip.txt', base64Str)
       document.getElementById("file").addEventListener("input", (e) => {
