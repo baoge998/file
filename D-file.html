@@ -375,6 +375,85 @@
           font-size: 16px;
         }
       }
+      #btn-wrap {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 10px;
+        max-width: 100%;
+        margin-top: 10px;
+      }
+      #btn-wrap button {
+        display: inline-flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 12px;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        background: #21262d;
+        color: #c9d1d9;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 120px;
+        max-width: 180px;
+        flex: 0 1 auto;
+      }
+      #btn-wrap button:hover {
+        background: #30363d;
+        transform: translateY(-2px);
+      }
+      #btn-wrap button.active {
+        border-color: #58a6ff;
+        background: #1f6feb;
+      }
+      .speed-info {
+        font-size: 12px;
+        color: #8b949e;
+        white-space: nowrap;
+        padding-left: 8px;
+        border-left: 1px solid #30363d;
+      }
+      @media (max-width: 768px) {
+        #btn-wrap {
+          gap: 6px;
+          padding: 8px 0;
+        }
+        
+        #btn-wrap button {
+          min-width: auto;
+          padding: 4px 8px;
+          font-size: 12px;
+        }
+        
+        .cdn-name {
+          font-size: 12px;
+        }
+        
+        .speed-info {
+          font-size: 11px;
+          padding-left: 6px;
+        }
+      }
+      .cdn-name {
+        font-size: 13px;
+        margin-right: 8px;
+        white-space: nowrap;
+      }
+      h4 {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      #rootdm {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+      }
+      #btn-wrap {
+        flex: 2;
+        min-width: 300px;
+      }
     </style>
   </head>
   <body>
@@ -428,43 +507,65 @@
         wrap.className = wrap.className ? "" : "w50";
       }
       let urls = [
-        { name: "本站", url: location.href },
-        {
-          name: "gitmirror加速",
-          url: `https://raw.gitmirror.com/${baseRepo}/master/`,
+        { 
+          name: "本站", 
+          url: (() => {
+            // 获取基础URL
+            const baseUrl = location.origin + location.pathname.replace(/\/[^/]*$/, '/');
+            console.log('Generated base URL:', baseUrl);
+            return baseUrl;
+          })()
         },
-        {
-          name: "jsdelivr加速",
-          url: `https://gcore.jsdelivr.net/gh/${baseRepo}@master/`,
-        },
-        {
-          name: "jsdelivr1加速",
-          url: `https://cdn.jsdelivr.net/gh/${baseRepo}/`,
-        },
+        { name: "gitmirror", url: `https://raw.gitmirror.com/${baseRepo}/master/` },
+        { name: "jsdelivr", url: `https://gcore.jsdelivr.net/gh/${baseRepo}@master/` },
+        { name: "jsdelivr1", url: `https://cdn.jsdelivr.net/gh/${baseRepo}/` },
+        { name: "ghgo", url: `https://ghgo.xyz/https://raw.githubusercontent.com/${baseRepo}/master/` },
+        { name: "gh-proxy", url: `https://gh-proxy.com/https://raw.githubusercontent.com/${baseRepo}/master/` },
+        { name: "ghproxy", url: `https://ghproxy.cc/https://raw.githubusercontent.com/${baseRepo}/master/` },
+        { name: "cf-ghproxy", url: `https://cf.ghproxy.cc/https://raw.githubusercontent.com/${baseRepo}/master/` },
+        { name: "ghproxy.net", url: `https://ghproxy.net/https://raw.githubusercontent.com/${baseRepo}/master/` }
       ];
+
+      // 添加调试日志
+      console.log('All CDN URLs:', urls.map(u => ({name: u.name, url: u.url})));
 
       function initBtn() {
         let btnEl = document.getElementById("btn-wrap");
-        for (let j = 0; j < urls.length; j++) {
-          const temp = urls[j];
+        btnEl.innerHTML = ''; // 清空现有内容
+        
+        urls.forEach((temp, j) => {
           const btn = document.createElement("button");
-          btn.innerHTML = temp.name + `<span id="btn${j}"></span>`;
+          btn.innerHTML = `
+            <span class="cdn-name">${temp.name}</span>
+            <span class="speed-info" id="btn${j}">测速中...</span>
+          `;
+
           let ig = new Image();
           ig.src = temp.url + "init.jpg?t=" + new Date().getTime();
           let start = new Date().getTime();
+          
           ig.onload = function () {
-            document.getElementById(`btn${j}`).innerHTML =
-              new Date().getTime() - start + "ms";
+            const speed = new Date().getTime() - start;
+            const speedEl = document.getElementById(`btn${j}`);
+            speedEl.innerHTML = speed + "ms";
+            speedEl.style.color = speed < 1000 ? '#7ee787' : '#8b949e';
           };
+          
           ig.onerror = function () {
-            document.getElementById(`btn${j}`).innerHTML = "延迟过高";
+            const speedEl = document.getElementById(`btn${j}`);
+            speedEl.innerHTML = "失败";
+            speedEl.style.color = '#f85149';
           };
+
           btn.onclick = function () {
+            btnEl.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
             document.getElementById("rootdm").value = temp.url;
             initFileList();
           };
-          btnEl.append(btn);
-        }
+          
+          btnEl.appendChild(btn);
+        });
       }
       initBtn();
 
@@ -505,9 +606,11 @@
         if (window.fileList.length) {
           document.getElementById("file_list").innerHTML = tempList
             .map((item) => {
+              // 正确处理文件路径中的空格
+              const encodedPath = item.path.replace(/ /g, '%20');
               return `<li class="file ${item.ftype}">
-            <a target="_blank" href="${rootdm}${item.path}" onclick="getDir('${
-                item.type == "dir" ? item.path : ""
+            <a target="_blank" href="${rootdm}${encodedPath}" onclick="getDir('${
+                item.type == "dir" ? encodedPath : ""
               }', false, event)">${item.name}</a><span class='sha'>${
                 item.sha
               }</span><span class="size">${getUnit(item.size)}</span>
@@ -587,13 +690,13 @@
       }
 
       function delOne(path, sha) {
-        if (path == "index.html") return alert("主页index.html不能被删除!");
+        if (path == "index.html") return alert("重要文件不能被删除!");
         if (window.confirm("是否确认删除改文件: " + path)) {
           delFile(path, sha, true);
         }
       }
       function delOne(path, sha) {
-        if (path == "D-file.html") return alert("主页D-file.html不能被删除!");
+        if (path == "D-file.html") return alert("D-file.html是本页面支持页，绝对不能被删除!");
         if (window.confirm("是否确认删除改文件: " + path)) {
           delFile(path, sha, true);
         }
