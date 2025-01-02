@@ -21,55 +21,65 @@
         @media screen and (max-width: 700px) {
             body { max-width: 95%; padding: 0 10px; }
             .back.ftr { display: none; }
-            .file_list li { width: 100%; }
             h2 { font-size: 16px; }
             .back { padding: 2px 8px; font-size: 13px; margin-left: 10px; }
+            input#search { display: inline-block; margin-top: 10px; min-width: 200px; }
         }
     </style>
 </head>
 <body>
     <div id="drop-zone" style="min-height: calc(100vh - 200px); position: relative;" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
         <div class="drag-hint">💡 支持拖拽上传：直接将文件拖放到页面任意位置即可上传</div>
-        <p>开发者：宝哥 <span class="tip">测试延迟请在根目录上传<b>init.jpg</b>(50kb以内)</span></p>
+        <p></span></p>
         <h4>根域名：<input type="text" value="" id="rootdm" /></h4>
-        <input type="file" id="file" class="filepond" name="filepond" />
-        <h2>当前目录：<i id="repo"></i>
-            <span onclick="addDir()" class="back">新建目录</span>
+        
+        <div id="btn-wrap">
+            <span onclick="updateToken()" class="back">设置Token</span>
+            <span onclick="updateRepo()" class="back">设置Repo</span>
+            <input type="file" id="file" class="filepond" name="filepond" style="display:none;" />
             <span onclick="document.getElementById('file').click()" class="back">上传文件</span>
+            <span onclick="addDir()" class="back">新建目录</span>
             <span onclick="dirBack()" class="back">←返回</span>
             <span onclick="refresh()" class="back ftr">刷新</span>
             <input type="text" class="back ftr" id="search" placeholder="关键词搜索, 回车确认" onkeyup="search(event)" />
-        </h2>
+        </div>
+
+        <h2>当前目录：<i id="repo"></i></h2>
+
         <div id="file_wrap">
             <ul class="file_list" id="file_list">加载中...</ul>
         </div>
-    </div>
 
-    <script>
-        window.baseRepo = localStorage.getItem("GIT_REPO") || "dhjz/file";
-        window.baseToken = localStorage.getItem("GIT_TOKEN") || "";
-        
-        function toggleWrap() {
-            var wrap = document.getElementById("file_wrap");
-            wrap.className = wrap.className ? "" : "w50";
-        }
+        <div id="loading" class="hide">处理中...</div>
 
-        function initFileList(searchVal) {
-            let rootdm = document.getElementById("rootdm").value || "";
-            let tempList = window.fileList;
-            if (searchVal && searchVal.trim()) {
-                tempList = window.fileList.filter(item => item.name.includes(searchVal.trim()));
+        <script>
+            window.baseRepo = localStorage.getItem("GIT_REPO") || "dhjz/file";
+            window.baseToken = localStorage.getItem("GIT_TOKEN") || "";
+            
+            if (!baseToken) alert("请先设置仓库和token");
+
+            function toggleWrap() {
+                var wrap = document.getElementById("file_wrap");
+                wrap.className = wrap.className ? "" : "w50";
             }
 
-            document.getElementById("file_list").innerHTML = tempList.length ? 
-                tempList.map(item => `<li class="${item.ftype}"><a target="_blank" href="${rootdm}${encodeURIComponent(item.path)}">${item.name}</a><span class='size'>${getUnit(item.size)}</span></li>`).join("") : 
-                `<div class='empty-folder-hint'><i>📁</i><p>当前文件夹为空</p></div>`;
-            
-            document.getElementById("repo").innerHTML = baseRepo + "/" + (paths.length ? paths[paths.length - 1] : "");
-        }
+            function initFileList(searchVal) {
+                let rootdm = document.getElementById("rootdm").value || "";
+                let tempList = window.fileList;
+                if (searchVal && searchVal.trim()) {
+                    tempList = window.fileList.filter(item => item.name.includes(searchVal.trim()));
+                }
 
-        // Additional functions like getDir, addDir, dirBack, refresh, search would be defined here...
+                document.getElementById("file_list").innerHTML = tempList.length ? 
+                    tempList.map(item => `<li class="${item.ftype}"><a target="_blank" href="${rootdm}${encodeURIComponent(item.path)}">${item.name}</a><span class='size'>${getUnit(item.size)}</span></li>`).join("") : 
+                    `<div class='empty-folder-hint'><i>📁</i><p>当前文件夹为空</p></div>`;
+                
+                document.getElementById("repo").innerHTML = baseRepo + "/" + (paths.length ? paths[paths.length - 1] : "");
+            }
 
-    </script>
+            // Additional functions like getDir, addDir, dirBack, refresh, search would be defined here...
+
+        </script>
+    </div>
 </body>
 </html>
