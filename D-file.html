@@ -473,9 +473,12 @@
     <h2>
       
       <span onclick="addDir()" class="back">新建目录</span>
+      <span onclick="renameFolder()" class="back">重命名目录</span> <!-- 新增重命名按钮 -->
       <span onclick="document.getElementById('file').click()" class="back"
         >上传文件</span
       >
+  
+
       <span onclick="dirBack()" class="back">←返回</span>
       <span onclick="refresh()" class="back ftr">刷新</span>
       <span onclick="toggleWrap()" class="back ftr">分列</span>
@@ -666,6 +669,16 @@
           putDir(val);
         }
       }
+function renameFolder() {
+    const folderName = prompt("请输入新的文件夹名称:");
+    if (folderName) {
+        // 调用后端API更新文件夹名称
+        updateFolderNameInDatabase(currentFolderPath, folderName);
+        refresh(); // 刷新文件列表
+    }
+}
+
+      
 
       function dirBack() {
         if (!paths.length) return alert("已经是根目录了!");
