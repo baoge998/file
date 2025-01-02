@@ -715,6 +715,23 @@
         document.getElementById("file").value = "";
       });
 
+      function renameFolder(oldName) {
+    const newName = prompt("请输入新的文件夹名称:", oldName);
+    if (newName) {
+        // 调用后端API更新文件夹名称
+        updateFolderNameInDatabase(oldName, newName);
+    }
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    const filePath = event.dataTransfer.getData("text/plain");
+    const targetFolder = event.target.dataset.folder; // 假设目标元素有data-folder属性
+    moveFileToNewLocation(filePath, targetFolder);
+}
+
+      
+
       function updateRepo() {
         const val = prompt(
           "请输入仓库 {owner}/{repo}",
