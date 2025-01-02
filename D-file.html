@@ -10,19 +10,18 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { padding: 20px 0 10px; background: #000; color: #fff; }
-        body { font-size: 16px; max-width: 80%; margin: 0 auto; }
+        body { font-size: 16px; max-width: 80%; margin: auto; }
         h2 { margin-bottom: 10px; }
         .back { display: inline-block; border: 1px solid #ff9000; padding: 4px 12px; font-size: 15px; cursor: pointer; margin-left: 20px; background: #ff9000; color: #000; border-radius: 3px; transition: all 0.2s; }
         .back:hover { background: #000; color: #ff9000; }
-        input.back { cursor: auto; background: #1b1b1b; border: 1px solid #333; color: #fff; }
+        input.back, input[type="text"] { background: #1b1b1b; border: 1px solid #333; color: #fff; padding: 6px; width: calc(100% - 12px); margin-top: 10px; }
         .file_list li { line-height: 40px; border-bottom: 1px solid #333; display: flex; align-items: center; padding: 6px 0; }
         .file_list li a { color: #fff; text-decoration: none; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .file_list li.dir a { text-decoration: underline; color: #ff9000; font-weight: bold; }
         @media screen and (max-width: 700px) {
             body { max-width: 95%; padding: 0 10px; }
-            .file_list li span { display: none !important; }
             .back.ftr { display: none; }
-            input#search { display: inline-block; margin-top: 10px; min-width: 200px; }
+            .file_list li { width: 100%; }
             h2 { font-size: 16px; }
             .back { padding: 2px 8px; font-size: 13px; margin-left: 10px; }
         }
@@ -31,7 +30,7 @@
 <body>
     <div id="drop-zone" style="min-height: calc(100vh - 200px); position: relative;" ondrop="handleDrop(event)" ondragover="handleDragOver(event)">
         <div class="drag-hint">💡 支持拖拽上传：直接将文件拖放到页面任意位置即可上传</div>
-        <p style="margin-bottom:10px;">开发者：宝哥 <span class="tip">测试延迟请在根目录上传<b>init.jpg</b>(50kb以内)</span></p>
+        <p>开发者：宝哥 <span class="tip">测试延迟请在根目录上传<b>init.jpg</b>(50kb以内)</span></p>
         <h4>根域名：<input type="text" value="" id="rootdm" /></h4>
         <input type="file" id="file" class="filepond" name="filepond" />
         <h2>当前目录：<i id="repo"></i>
