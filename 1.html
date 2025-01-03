@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serv00 账号检测器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .status-info {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            text-align: left; /* 左对齐 */
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h1>Serv00 账号检测器</h1>
+        <label for="username">请输入用户名:</label>
+        <input type="text" id="username" placeholder="用户名">
+        <button onclick="checkAccount()">检测账户状态</button>
+
+        <div class="status-info" id="statusInfo"></div>
+    </div>
+
+    <script>
+        async function checkAccount() {
+            const baseUrl = "https://s00test.64t76dee9sk5.workers.dev/?username=";
+            const username = document.getElementById("username").value.trim();
+            
+            if (!username) {
+                alert("请输入用户名！");
+                return;
+            }
+
+            const fullLink = baseUrl + encodeURIComponent(username);
+
+            // 使用代理服务
+            const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+            
+            try {
+                const response = await fetch(proxyUrl + fullLink);
+                
+                if (!response.ok) {
+                    throw new Error(`网络错误，状态码：${response.status}`);
+                }
+
+                const data = await response.json(); // 假设返回的是 JSON 格式的数据
+                displayStatus(data);
+                
+            } catch (error) {
+                document.getElementById("statusInfo").innerText = error.message; // 显示错误信息
+                document.getElementById("statusInfo").style.color = 'red'; // 错误信息为红色
+                console.error('错误:', error); // 在控制台打印错误信息
+            }
+        }
+
+        function displayStatus(data) {
+            // 格式化并显示账户状态信息
+            const statusMessage = `状态: ${data.status}\n消息: ${data.message}`;
+            
+            document.getElementById("statusInfo").innerText = statusMessage; // 显示状态信息
+            document.getElementById("statusInfo").style.color = 'black'; // 恢复颜色为黑色
+        }
+    </script>
+</body>
+</html>
