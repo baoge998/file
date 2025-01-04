@@ -42,9 +42,32 @@
             color: white;
             font-size: 16px;
             cursor: pointer;
+            margin-bottom: 10px; /* 增加按钮之间的间距 */
         }
         button:hover {
             background-color: #0056b3;
+        }
+        .account-list {
+            margin-top: 20px;
+            text-align: left;
+            display: none; /* 默认隐藏列表 */
+        }
+        .account-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+        .delete-button {
+            background-color: red; /* 删除按钮颜色 */
+            color: white; /* 删除按钮文字颜色 */
+            font-size: 12px; /* 字体大小 */
+            padding: 2px 8px; /* 缩小按钮大小 */
+            border-radius: 4px; /* 圆角 */
+            border: none; /* 无边框 */
+        }
+        .delete-button:hover {
+            background-color: darkred; /* 删除按钮悬停颜色 */
         }
         @media (max-width: 400px) {
             .panel {
@@ -59,10 +82,17 @@
         <h1>Serv00 账号检测器</h1>
         <label for="username">请输入用户名:</label>
         <input type="text" id="username" placeholder="用户名">
+        
         <button onclick="openAccountStatus()">检测账户状态</button>
+        
+        <button onclick="toggleAccountList()">显示/隐藏账户列表</button> <!-- 新增按钮 -->
+        
+        <div class="account-list" id="accountList"></div>
     </div>
 
     <script>
+        const accountList = JSON.parse(localStorage.getItem('accountList')) || []; // 从 localStorage 获取账户列表
+
         function openAccountStatus() {
             const baseUrl = "https://s00test.64t76dee9sk5.workers.dev/?username=";
             const username = document.getElementById("username").value.trim();
@@ -72,9 +102,71 @@
                 return;
             }
 
-            const fullLink = baseUrl + encodeURIComponent(username);
-            window.open(fullLink, '_blank'); // 在新标签页中打开完整链接
-        }
+            // 检测账户状态并添加到列表
+            if (!accountList.includes(username)) {
+                accountList.push(username);
+                updateAccountList();
+                saveToLocalStorage(); // 保存到 localStorage
+           }
+
+           const fullLink = baseUrl + encodeURIComponent(username);
+           window.open(fullLink, '_blank'); // 在新标签页中打开完整链接
+       }
+
+       function updateAccountList() {
+           const listContainer = document.getElementById("accountList");
+           listContainer.innerHTML = ''; // 清空当前列表
+
+           accountList.forEach((account, index) => {
+               const accountItem = document.createElement('div');
+               accountItem.className = 'account-item';
+               
+               const accountName = document.createElement('span');
+               accountName.textContent = account;
+
+               const deleteButton = document.createElement('button');
+               deleteButton.textContent = '删除';
+               deleteButton.className = 'delete-button';
+               deleteButton.onclick = () => removeAccount(index);
+
+               accountItem.appendChild(accountName);
+               accountItem.appendChild(deleteButton);
+               listContainer.appendChild(accountItem);
+               
+               // 点击账户名直接检测
+               accountName.onclick = () => detectAccount(account);
+               accountName.style.cursor = 'pointer';
+               accountName.style.color = '#007BFF'; // 添加颜色以表示可点击
+               accountName.onmouseover = () => { accountName.style.textDecoration = 'underline'; };
+               accountName.onmouseout = () => { accountName.style.textDecoration = 'none'; };
+           });
+       }
+
+       function removeAccount(index) {
+           accountList.splice(index, 1); // 从列表中删除账户
+           updateAccountList(); // 更新显示
+           saveToLocalStorage(); // 更新 localStorage
+       }
+
+       function detectAccount(account) {
+           document.getElementById("username").value = account; // 将账户名填入输入框
+           openAccountStatus(); // 检测该账户状态
+       }
+
+       function toggleAccountList() {
+           const listContainer = document.getElementById("accountList");
+           if (listContainer.style.display === "none" || listContainer.style.display === "") {
+               listContainer.style.display = "block"; // 显示列表
+           } else {
+               listContainer.style.display = "none"; // 隐藏列表
+           }
+       }
+
+       function saveToLocalStorage() {
+           localStorage.setItem('accountList', JSON.stringify(accountList)); // 保存账户列表到 localStorage
+       }
+
+       updateAccountList(); // 初始化时更新列表显示
     </script>
 </body>
 </html>
