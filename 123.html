@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Serv00 账号检测器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        input {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .account-list {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .account-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+        .account-item button {
+            background-color: red; /* 删除按钮颜色 */
+        }
+        .account-item button:hover {
+            background-color: darkred; /* 删除按钮悬停颜色 */
+        }
+        @media (max-width: 400px) {
+            .panel {
+                width: calc(100% - 40px);
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <h1>Serv00 账号检测器</h1>
+        <label for="username">请输入用户名:</label>
+        <input type="text" id="username" placeholder="用户名">
+        <button onclick="openAccountStatus()">检测账户状态</button>
+
+        <div class="account-list" id="accountList"></div>
+    </div>
+
+    <script>
+        const accountList = [];
+
+        function openAccountStatus() {
+            const baseUrl = "https://s00test.64t76dee9sk5.workers.dev/?username=";
+            const username = document.getElementById("username").value.trim();
+            
+            if (!username) {
+                alert("请输入用户名！");
+                return;
+            }
+
+            // 检测账户状态并添加到列表
+            if (!accountList.includes(username)) {
+                accountList.push(username);
+                updateAccountList();
+                alert(`已添加账户：${username}`);
+            } else {
+                alert(`账户 ${username} 已存在于列表中！`);
+            }
+
+            const fullLink = baseUrl + encodeURIComponent(username);
+            window.open(fullLink, '_blank'); // 在新标签页中打开完整链接
+        }
+
+        function updateAccountList() {
+            const listContainer = document.getElementById("accountList");
+            listContainer.innerHTML = ''; // 清空当前列表
+
+            accountList.forEach((account, index) => {
+                const accountItem = document.createElement('div');
+                accountItem.className = 'account-item';
+                
+                const accountName = document.createElement('span');
+                accountName.textContent = account;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '删除';
+                deleteButton.onclick = () => removeAccount(index);
+
+                accountItem.appendChild(accountName);
+                accountItem.appendChild(deleteButton);
+                listContainer.appendChild(accountItem);
+                
+                // 点击账户名可自动添加
+                accountName.onclick = () => addAccount(account);
+                accountName.style.cursor = 'pointer';
+                accountName.style.color = '#007BFF'; // 添加颜色以表示可点击
+                accountName.onmouseover = () => { accountName.style.textDecoration = 'underline'; };
+                accountName.onmouseout = () => { accountName.style.textDecoration = 'none'; };
+                
+            });
+        }
+
+        function removeAccount(index) {
+            accountList.splice(index, 1); // 从列表中删除账户
+            updateAccountList(); // 更新显示
+        }
+
+        function addAccount(account) {
+           document.getElementById("username").value = account; // 将账户名填入输入框
+           alert(`已选择账户：${account}`);
+       }
+    </script>
+</body>
+</html>
