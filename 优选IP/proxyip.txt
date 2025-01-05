@@ -7,6 +7,12 @@ https://raw.githubusercontent.com/bbylw/CFCDN-Auto/refs/heads/main/yx_ips.txt
 
 https://raw.githubusercontent.com/cdngogo/CFCDN-Auto/refs/heads/main/yx_ips.txt
 
+https://123.mot.cloudns.biz/Ip.txt
+
+https://api.zjcc.cloudns.be/openwrtip/main/seaspeed.txt
+
+https://api.zjcc.cloudns.be/openwrtip/main/sjcspeed.txt
+
 
 
 2、ADDAPI库已经更新，以后有时间随缘更新ip库，里面的优选ip基本都是高速ip。
@@ -38,4 +44,11 @@ https://addressesapi.090227.xyz/ip.164746.xyz
 https://ipdb.api.030101.xyz/?type=bestproxy&country=true
 https://ipdb.api.030101.xyz/?type=bestcf&country=true
 
-6、https://123.mot.cloudns.biz/Ip.txt
+6、PROXYIP获取地址
+
+https://www.nslookup.io/domains/cdn.xn--b6gac.eu.org/dns-records/
+https://www.nslookup.io/domains/cdn-all.xn--b6gac.eu.org/dns-records/
+
+7、ip查询网站：https://www.ipaddress.my/?lang=zh_CN
+网站：https://ipchaxun.com/
+
