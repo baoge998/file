@@ -1,147 +1,37 @@
 <!DOCTYPE html>
 <html lang="zh">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>书签管理系统</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            height: 100vh;
-            background-color: #f4f4f4;
-        }
-
-        #bookmark-manager {
-            display: none;
-            width: 90%;
-            max-width: 800px;
-            background-color: #d9c1a1;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            text-align: center;
-        }
-
-        #auth {
-            width: 90%;
-            max-width: 600px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            text-align: center;
-        }
-
-        input[type="text"],
-        input[type="password"],
-        select {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin: 5px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        button {
-            padding: 10px;
-            cursor: pointer;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            margin: 5px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .bookmark-container {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            margin: 10px 0;
-        }
-
-        .bookmark-card {
-            border-radius: 5px;
-            padding: 8px;
-            margin: 5px;
-            width: calc(30% - 10px);
-            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            background-color: #e7f3fe;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-
-        .bookmark-card:hover {
-            background-color: #cce4ff;
-        }
-
-        .delete-button {
-            color: red;
-            font-weight: bold;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        .group {
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        .group-title {
-            font-weight: bold;
-            margin-top: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        #quote {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            color: #ff5722;
-            text-align: center;
-        }
-
-        .exit-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #dc3545;
-        }
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; flex-direction: column; height: 100vh; background-color: #f4f4f4; }
+        #bookmark-manager { display: none; width: 90%; max-width: 800px; background-color: #d9c1a1; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); padding: 20px; text-align: center; position: relative; }
+        #auth { width: 90%; max-width: 600px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); padding: 20px; text-align: center; }
+        input[type="text"], input[type="password"], select { width: calc(100% - 22px); padding: 10px; margin: 5px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 10px; cursor: pointer; background-color: #007bff; color: white; border: none; border-radius: 5px; margin: 5px; }
+        button:hover { background-color: #0056b3; }
+        .controls { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; flex-wrap: wrap;}
+        .bookmark-container { display: flex; flex-wrap: wrap; justify-content: space-between; margin-top :10 px ;}
+        .bookmark-card { border-radius: 5px; padding: 8px; margin-right :10 px ;margin-bottom :20 px;width :calc(30% -10 px);box-shadow :0 1 px 5 px rgba(0,0,0,0.1);text-align:center;background-color:#e7f3fe;font-size :1.1 em ;cursor:pointer ;transition :background-color 0.3 s;}
+        .bookmark-card:hover { background-color:#cce4ff;}
+        .delete-button { color:red;font-weight:bold;margin-left :10 px ;cursor:pointer;}
+        .group { margin-top :20 px;text-align:left;}
+        .group-title { font-weight:bold;margin-top :20 px ;display:flex ;justify-content :space-between ;align-items:center;}
+        #quote { font-size :1.5em;margin-bottom :20 px;color:#ff5722;text-align:center;}
+        .exit-button { position:absolute ;top :20 px ;right :20 px;background-color :#dc3545;color:white;border:none;border-radius:5px;padding:5px;}
     </style>
 </head>
-
 <body>
-
     <div id="quote"></div>
-
     <div id="auth">
         <h1>书签管理系统 - 登录</h1>
         <input type="text" id="username" placeholder="用户名" required>
         <input type="password" id="password" placeholder="密码" required>
         <button onclick="login()">登录</button>
         <button onclick="toggleRegister()">注册</button>
-        <div id="register" style="display: none;">
+        <div id="register" style="display:none;">
             <h2>注册新用户</h2>
             <input type="text" id="new-username" placeholder="用户名" required>
             <input type="password" id="new-password" placeholder="密码" required>
@@ -153,20 +43,22 @@
         <button class="exit-button" onclick="logout()">退出</button>
         <h2>书签管理</h2>
 
-        <!-- 添加分组 -->
-        <div class="controls" id="admin-controls" style="display: none;">
-            <input type="text" id="group-name" placeholder="分组名称" style="display: none;">
-            <button onclick="addGroup()" id="confirm-add-group" style="display: none;">确认添加分组</button>
-            <button onclick="toggleGroupInput()" id="add-group-button">添加分组</button>
-        </div>
+        <!-- 导出和导入功能 -->
+        <div class="controls">
+            <!-- 管理员才能看到这些按钮 -->
+            <span id="admin-controls" style="display:none;">
+                <button onclick="exportBookmarks()">导出书签</button>
+                <button onclick="importBookmarks()">导入书签</button>
+                <button onclick="toggleGroupInput()">添加分组</button>
+                <input type="text" id="group-name" placeholder="分组名称" style="display:none;">
+                <button onclick="addGroup()" id="confirm-add-group" style="display:none;">确认添加分组</button>
 
-        <!-- 添加书签 -->
-        <div class="controls" id="admin-bookmark-controls" style="display: none;">
-            <input type="text" id="bookmark-name" placeholder="书签名称" style="display: none;">
-            <input type="text" id="bookmark-url" placeholder="书签链接" style="display: none;">
-            <select id="group-select" style="display: none;"></select>
-            <button onclick="addBookmark()" id="confirm-add-bookmark" style="display: none;">确认添加书签</button>
-            <button onclick="toggleBookmarkInput()" id="add-bookmark-button">添加书签</button>
+                <button onclick="toggleBookmarkInput()">添加书签</button>
+                <input type="text" id="bookmark-name" placeholder="书签名称" style="display:none;">
+                <input type="text" id="bookmark-url" placeholder="书签链接" style="display:none;">
+                <select id="group-select" style="display:none;"></select>
+                <button onclick="addBookmark()" id="confirm-add-bookmark" style="display:none;">确认添加书签</button>
+            </span>
         </div>
 
         <div id="groups" class="group-container"></div>
@@ -174,7 +66,7 @@
 
     <script>
         const quotes = [
-            "成功是努力的结果，而不是偶然的产物。",
+           "成功是努力的结果，而不是偶然的产物。",
             "只要路是对的，就不怕路远。",
             "每天都是新的开始，给自己一个新的机会。",
             "不怕慢，就怕站。",
@@ -218,12 +110,13 @@
     "征服畏惧、建立自信的最快最确实的方法，就是去做你害怕的事，直到你获得成功的经验。",
     "当你感到悲哀痛苦时，最好是去学些什么东西。学习会使你永远立于不败之地。",
     "任何的限制，都是从自己的内心开始的。"
-
+            // 更多名言...
         ];
 
         const adminUsers = {
             "baoge": "wsb123456",
-            "admin2": "password2", // 添加更多管理员
+            "admin2": "password2",
+            // 添加更多管理员
         };
 
         let currentUser = null;
@@ -237,6 +130,11 @@
                 document.getElementById('bookmark-manager').style.display = 'block';
                 loadGroups();
                 restoreInputStates();
+
+                // 检查用户是否为管理员
+                if (currentUser in adminUsers) {
+                    document.getElementById('admin-controls').style.display = 'block';
+                }
             } else {
                 document.getElementById('quote').textContent = randomQuote();
             }
@@ -255,15 +153,19 @@
                 localStorage.setItem('currentUser', currentUser);
                 document.getElementById('auth').style.display = 'none';
                 document.getElementById('bookmark-manager').style.display = 'block';
-                document.getElementById('admin-controls').style.display = 'flex';
-                document.getElementById('admin-bookmark-controls').style.display = 'flex';
                 loadGroups();
+                
+                // 显示管理员控制按钮
+                document.getElementById('admin-controls').style.display = 'block';
             } else if (users[username] && users[username] === password) {
                 currentUser = username;
                 localStorage.setItem('currentUser', currentUser);
                 document.getElementById('auth').style.display = 'none';
                 document.getElementById('bookmark-manager').style.display = 'block';
                 loadGroups();
+                
+                // 隐藏管理员控制按钮
+                document.getElementById('admin-controls').style.display = 'none';
             } else {
                 alert("用户名或密码错误");
             }
@@ -304,178 +206,211 @@
             document.getElementById('new-password').value = '';
         }
 
-        function toggleGroupInput() {
-            const input = document.getElementById('group-name');
-            const button = document.getElementById('confirm-add-group');
-            input.style.display = input.style.display === 'none' ? 'block' : 'none';
-            button.style.display = button.style.display === 'none' ? 'block' : 'none';
-        }
+       function toggleGroupInput() {
+           const input=document.getElementById("group-name");
+           const button=document.getElementById("confirm-add-group");
+           input.style.display=input.style.display==="none"? "block":"none";
+           button.style.display=button.style.display==="none"? "block":"none";
+       }
 
-        function toggleBookmarkInput() {
-            const nameInput = document.getElementById('bookmark-name');
-            const urlInput = document.getElementById('bookmark-url');
-            const confirmButton = document.getElementById('confirm-add-bookmark');
-            const groupSelect = document.getElementById('group-select');
+       function toggleBookmarkInput() {
+           const nameInput=document.getElementById("bookmark-name");
+           const urlInput=document.getElementById("bookmark-url");
+           const confirmButton=document.getElementById("confirm-add-bookmark");
+           const groupSelect=document.getElementById("group-select");
 
-            nameInput.style.display = nameInput.style.display === 'none' ? 'block' : 'none';
-            urlInput.style.display = urlInput.style.display === 'none' ? 'block' : 'none';
-            confirmButton.style.display = confirmButton.style.display === 'none' ? 'block' : 'none';
-            groupSelect.style.display = groupSelect.style.display === 'none' ? 'block' : 'none';
+           nameInput.style.display=nameInput.style.display==="none"? "block":"none";
+           urlInput.style.display=urlInput.style.display==="none"? "block":"none";
+           confirmButton.style.display=confirmButton.style.display==="none"? "block":"none";
 
-            // 填充分组选择框
-            if (groups) {
-                groupSelect.innerHTML = '';
-                for (const group in groups) {
-                    const option = document.createElement('option');
-                    option.value = group;
-                    option.textContent = group;
-                    groupSelect.appendChild(option);
-                }
-            }
-        }
+           // 填充分组选择框
+           groupSelect.innerHTML='';
+           for (const group in groups) {
+               const option=document.createElement("option");
+               option.value=group;
+               option.textContent=group;
+               groupSelect.appendChild(option);
+           }
+           groupSelect.style.display=groupSelect.style.display==="none"? "block":"none";
+       }
 
-        function addGroup() {
-            const groupName = document.getElementById('group-name').value.trim();
-            if (groupName) {
-                groups[groupName] = [];
-                document.getElementById('group-name').value = '';
-                saveData();
-                loadGroups();
-            } else {
-                alert("请输入分组名称");
-            }
-        }
+       function addGroup() {
+           const groupName=document.getElementById("group-name").value.trim();
+           if(groupName) {
+               groups[groupName]=[];
+               saveData();
+               loadGroups();
+               document.getElementById("group-name").value=''; // 清空输入框
+           } else {
+               alert("请输入分组名称");
+           }
+       }
 
-        function renameGroup(oldGroupName) {
-            const newGroupName = prompt("请输入新的分组名称:", oldGroupName);
-            if (newGroupName && !groups[newGroupName]) {
-                groups[newGroupName] = groups[oldGroupName];
-                delete groups[oldGroupName];
-                saveData();
-                loadGroups();
-            } else if (!newGroupName) {
-                alert("分组名称不能为空");
-            } else {
-                alert("该分组名称已存在");
-            }
-        }
+       function addBookmark() {
+           const name=document.getElementById("bookmark-name").value.trim();
+           const url=document.getElementById("bookmark-url").value.trim();
+           const groupName=document.getElementById("group-select").value;
 
-        function addBookmark() {
-            const name = document.getElementById('bookmark-name').value.trim();
-            const url = document.getElementById('bookmark-url').value.trim();
-            const groupName = document.getElementById('group-select').value;
+           if(name && url && groupName) {
+               groups[groupName].push({ name, url });
+               saveData();
+               loadGroups();
+               // 清空输入框
+               document.getElementById("bookmark-name").value='';
+               document.getElementById("bookmark-url").value='';
+           } else {
+               alert("请填写书签名称、链接和选择分组");
+           }
+       }
 
-            if (name && url && groupName) {
-                groups[groupName].push({ name, url });
-                document.getElementById('bookmark-name').value = '';
-                document.getElementById('bookmark-url').value = '';
-                saveData();
-                loadGroups();
-            } else {
-                alert("请填写书签名称、链接和选择分组");
-            }
-        }
+       function loadGroups() {
+           const quoteDiv=document.getElementById("quote");
+           quoteDiv.textContent=randomQuote();
 
-        function loadGroups() {
-            const quoteDiv = document.getElementById('quote');
-            quoteDiv.textContent = randomQuote();
+           const groupsDiv=document.getElementById("groups");
+           groupsDiv.innerHTML='';
 
-            const groupsDiv = document.getElementById('groups');
-            groupsDiv.innerHTML = '';
+           for(const group in groups) {
+               const groupDiv=document.createElement("div");
+               groupDiv.className='group';
+               groupDiv.innerHTML=`<div class='group-title'>${group}
+                   ${currentUser in adminUsers ? '<span class=\'delete-button\' onclick=\'removeGroup("' + group + '")\'>×</span>' : ''}
+                   </div>`;
+               
+               const bookmarkContainer=document.createElement("div");
+               bookmarkContainer.className='bookmark-container';
 
-            const groupList = Object.keys(groups);
+               groups[group].forEach((bookmark,index) => {
+                   const card=document.createElement("div");
+                   card.className='bookmark-card';
+                   card.innerHTML=`<strong>${bookmark.name}</strong>`;
+                   card.title=bookmark.url;
 
-            // 创建一个可拖动的分组容器
-            const groupContainer = document.createElement('div');
-            groupContainer.className = 'group-container';
+                   // 点击卡片打开链接
+                   card.onclick=function(event) {
+                       event.stopPropagation(); // 阻止事件冒泡，以防止点击删除按钮时也触发打开链接
+                       window.open(bookmark.url, '_blank');
+                   };
 
-            groupList.forEach(group => {
-                const groupDiv = document.createElement('div');
-                groupDiv.className = 'group';
+                   // 删除按钮
+                   if (currentUser in adminUsers) {
+                       const deleteButton = document.createElement('span');
+                       deleteButton.className='delete-button';
+                       deleteButton.innerHTML='×';
+                       deleteButton.onclick=function(event) {
+                           event.stopPropagation(); // 阻止事件冒泡
+                           removeBookmark(group, index);
+                       };
+                       card.appendChild(deleteButton);
+                   }
 
-                groupDiv.innerHTML = `
-                    <div class="group-title">
-                        ${group}
-                        <div>
-                            ${currentUser in adminUsers ? '<button onclick="renameGroup(\'' + group + '\')">改名</button>' : ''}
-                            ${currentUser in adminUsers ? '<span class="delete-button" onclick="removeGroup(\'' + group + '\')">×</span>' : ''}
-                        </div>
-                    </div>`;
+                   bookmarkContainer.appendChild(card);
+               });
 
-                const bookmarkContainer = document.createElement('div');
-                bookmarkContainer.className = 'bookmark-container';
-                groupDiv.appendChild(bookmarkContainer);
-                groupsDiv.appendChild(groupDiv);
+               groupDiv.appendChild(bookmarkContainer);
+               groupsDiv.appendChild(groupDiv);
 
-                groups[group].forEach((bookmark, index) => {
-                    const card = document.createElement('div');
-                    card.className = 'bookmark-card';
-                    card.innerHTML = `
-                        <div class="card-content" title="${bookmark.url}" onclick="window.open('${bookmark.url}', '_blank')"><strong>${bookmark.name}</strong></div>
-                        ${currentUser in adminUsers ? '<span class="delete-button" onclick="removeBookmark(\'' + group + '\', ' + index + ')">×</span>' : ''}`;
-                    bookmarkContainer.appendChild(card);
-                });
+               // 添加拖动功能
+               Sortable.create(bookmarkContainer, {
+                   animation: 150,
+                   onEnd(evt) {
+                       const movedItem = groups[group].splice(evt.oldIndex, 1)[0];
+                       groups[group].splice(evt.newIndex, 0, movedItem);
+                       saveData(); // 保存数据
+                       loadGroups(); // 刷新显示
+                   },
+               });
+           }
 
-                // 使书签可拖动（仅限管理员）
-                if (currentUser in adminUsers) {
-                    Sortable.create(bookmarkContainer, {
-                        animation: 150,
-                        onEnd: function (evt) {
-                            const movedItem = groups[group].splice(evt.oldIndex, 1)[0];
-                            groups[group].splice(evt.newIndex, 0, movedItem);
-                            saveData();
-                        }
-                    });
-                }
+           // 添加可拖动的分组（仅限管理员）
+           if (currentUser in adminUsers) {
+               Sortable.create(groupsDiv, {
+                   animation: 150,
+                   onEnd(evt) {
+                       const movedGroupKey = Object.keys(groups)[evt.oldIndex];
+                       const movedGroupValue = groups[movedGroupKey];
+                       delete groups[movedGroupKey];
+                       Object.keys(groups).splice(evt.newIndex, 0, movedGroupKey);
+                       groups[movedGroupKey] = movedGroupValue;
+                       saveData(); // 保存数据
+                       loadGroups(); // 刷新显示
+                   },
+               });
+           }
+       }
 
-                // 添加到分组容器
-                groupContainer.appendChild(groupDiv);
-            });
+       function removeGroup(groupName) {
+           delete groups[groupName];
+           saveData();
+           loadGroups();
+       }
 
-            // 添加可拖动的分组（仅限管理员）
-            if (currentUser in adminUsers) {
-                Sortable.create(groupContainer, {
-                    animation: 150,
-                    onEnd: function (evt) {
-                        const movedGroup = groupList.splice(evt.oldIndex, 1)[0];
-                        groupList.splice(evt.newIndex, 0, movedGroup);
-                        groups = Object.fromEntries(groupList.map(group => [group, groups[group]]));
-                        saveData();
-                        loadGroups();
-                    }
-                });
-            }
+       function removeBookmark(groupName,index) {
+          groups[groupName].splice(index,1);
+          saveData();
+          loadGroups();
+       }
 
-            groupsDiv.appendChild(groupContainer);
-        }
+       function saveData() {
+          localStorage.setItem("groups", JSON.stringify(groups));
+       }
 
-        function removeGroup(groupName) {
-            delete groups[groupName];
-            saveData();
-            loadGroups();
-        }
+       function restoreInputStates() {
+          // 恢复输入框状态
+          document.getElementById("group-name").style.display='none';
+          document.getElementById("bookmark-name").style.display='none';
+          document.getElementById("bookmark-url").style.display='none';
+          document.getElementById("group-select").style.display='none';  
+          document.getElementById("confirm-add-group").style.display='none'; 
+          document.getElementById("confirm-add-bookmark").style.display='none'; 
+       }
 
-        function removeBookmark(groupName, index) {
-            groups[groupName].splice(index, 1);
-            saveData();
-            loadGroups();
-        }
+       function exportBookmarks() {
+           const dataStr=JSON.stringify(groups);
+           const blob=new Blob([dataStr], { type:'application/json' });
+           const url=URL.createObjectURL(blob);
+           const a=document.createElement('a');
+           a.href=url;
+           a.download='bookmarks.json';
+           a.click();
+           URL.revokeObjectURL(url);
+       }
 
-        function saveData() {
-            localStorage.setItem('groups', JSON.stringify(groups));
-        }
+       function importBookmarks() {
+           const input=document.createElement('input');
+           input.type='file';
+           input.accept='.json';
 
-        function restoreInputStates() {
-            // 恢复分组和书签输入框的状态
-            document.getElementById('group-name').style.display = 'none';
-            document.getElementById('bookmark-name').style.display = 'none';
-            document.getElementById('bookmark-url').style.display = 'none';
-            document.getElementById('group-select').style.display = 'none';
-            document.getElementById('confirm-add-group').style.display = 'none';
-            document.getElementById('confirm-add-bookmark').style.display = 'none';
-        }
-    </script>
+           input.onchange=e => {
+               const file=e.target.files[0];
+               const reader=new FileReader();
 
+               reader.onload=event => {
+                   try{
+                       const importedGroups=JSON.parse(event.target.result);
+
+                       for(const group in importedGroups){
+                           if(groups[group]){
+                               if(confirm(`分组"${group}"已存在，是否合并?`)){
+                                   groups[group]=groups[group].concat(importedGroups[group]);
+                               }
+                           }else{
+                               groups[group]=importedGroups[group];
+                           }
+                       }
+
+                       saveData();
+                       loadGroups();
+                   } catch(error) {
+                       alert("导入失败，文件格式不正确!");
+                   }
+               };
+               
+               reader.readAsText(file);
+           };
+           
+           input.click();
+       }
+   </script>
 </body>
-
 </html>
