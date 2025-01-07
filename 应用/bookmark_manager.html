@@ -9,14 +9,13 @@
         body {
             font-family: Arial, sans-serif; 
             margin: 0; 
-            padding: 20px; 
+            padding: 0; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
             flex-direction: column; 
             height: 100vh; 
             background-color: #f4f4f4; 
-            overflow-x: hidden;
         }
         #bookmark-manager { 
             display: none; 
@@ -28,8 +27,8 @@
             padding: 20px; 
             text-align: center; 
             position: relative; 
-            overflow-y: auto; /* 允许垂直滚动 */
-            max-height: 80vh; /* 最大高度 */
+            overflow-y: auto; 
+            max-height: 80vh; 
         }
         #auth { 
             width: 95%; 
@@ -55,7 +54,7 @@
             border: none; 
             border-radius: 5px; 
             margin: 5px; 
-            width: auto; /* 使按钮宽度自适应 */
+            width: auto; 
         }
         button:hover { 
             background-color: #0056b3; 
@@ -84,6 +83,7 @@
             font-size: 1.1em; 
             cursor: pointer; 
             transition: background-color 0.3s;
+            position: relative; 
         }
         .bookmark-card:hover { 
             background-color: #cce4ff;
@@ -93,6 +93,10 @@
             font-weight: bold; 
             margin-left: 5px; 
             cursor: pointer;
+            position: absolute; 
+            top: 5px; 
+            right: 5px; 
+            font-size: 1.2em; 
         }
         .group { 
             margin-top: 20px; 
@@ -119,18 +123,11 @@
             color: white; 
             border: none; 
             border-radius: 5px; 
-            padding: 5px 10px; /* 调整按钮内边距 */
+            padding: 5px 10px; 
         }
-        .back-to-top { 
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            background-color: #007bff; 
-            color: white; 
-            border: none; 
-            border-radius: 5px; 
-            padding: 10px; 
-            display: none; /* 默认隐藏 */
+        .scrollable {
+            max-height: 70vh; /* 限制面板高度 */
+            overflow-y: auto; /* 启用垂直滚动 */
         }
     </style>
 </head>
@@ -152,26 +149,23 @@
 
     <div id="bookmark-manager">
         <button class="exit-button" onclick="logout()">退出</button>
-        <button class="back-to-top" onclick="scrollToTop()">返回顶部</button>
         <h2>书签管理</h2>
 
-        <div class="controls">
-            <span id="admin-controls" style="display:none;">
-                <button onclick="exportBookmarks()">导出书签</button>
-                <button onclick="importBookmarks()">导入书签</button>
-                <button onclick="toggleGroupInput()">添加分组</button>
-                <input type="text" id="group-name" placeholder="分组名称" style="display:none;">
-                <button onclick="addGroup()" id="confirm-add-group" style="display:none;">确认添加分组</button>
+        <div class="controls" id="admin-controls" style="display:none;">
+            <button onclick="exportBookmarks()">导出书签</button>
+            <button onclick="importBookmarks()">导入书签</button>
+            <button onclick="toggleGroupInput()">添加分组</button>
+            <input type="text" id="group-name" placeholder="分组名称" style="display:none;">
+            <button onclick="addGroup()" id="confirm-add-group" style="display:none;">确认添加分组</button>
 
-                <button onclick="toggleBookmarkInput()">添加书签</button>
-                <input type="text" id="bookmark-name" placeholder="书签名称" style="display:none;">
-                <input type="text" id="bookmark-url" placeholder="书签链接" style="display:none;">
-                <select id="group-select" style="display:none;"></select>
-                <button onclick="addBookmark()" id="confirm-add-bookmark" style="display:none;">确认添加书签</button>
-            </span>
+            <button onclick="toggleBookmarkInput()">添加书签</button>
+            <input type="text" id="bookmark-name" placeholder="书签名称" style="display:none;">
+            <input type="text" id="bookmark-url" placeholder="书签链接" style="display:none;">
+            <select id="group-select" style="display:none;"></select>
+            <button onclick="addBookmark()" id="confirm-add-bookmark" style="display:none;">确认添加书签</button>
         </div>
 
-        <div id="groups" class="group-container"></div>
+        <div id="groups" class="scrollable"></div>
     </div>
 
     <script>
@@ -226,7 +220,7 @@
                 document.getElementById('auth').style.display = 'none';
                 document.getElementById('bookmark-manager').style.display = 'block';
                 loadGroups();
-                document.getElementById('admin-controls').style.display = 'none';
+                document.getElementById('admin-controls').style.display = 'none'; // 普通用户没有管理权限
             } else {
                 alert("用户名或密码错误");
             }
@@ -345,11 +339,12 @@
                     card.innerHTML = `<strong>${bookmark.name}</strong>`;
                     card.title = bookmark.url;
 
-                    card.onclick = function (event) {
-                        event.stopPropagation();
+                    // 点击书签时打开链接
+                    card.onclick = function () {
                         window.open(bookmark.url, '_blank');
                     };
 
+                    // 点击删除按钮时删除书签
                     if (currentUser in adminUsers) {
                         const deleteButton = document.createElement('span');
                         deleteButton.className = 'delete-button';
@@ -367,17 +362,21 @@
                 groupDiv.appendChild(bookmarkContainer);
                 groupsDiv.appendChild(groupDiv);
 
-                Sortable.create(bookmarkContainer, {
-                    animation: 150,
-                    onEnd(evt) {
-                        const movedItem = groups[group].splice(evt.oldIndex, 1)[0];
-                        groups[group].splice(evt.newIndex, 0, movedItem);
-                        saveData();
-                        loadGroups();
-                    },
-                });
+                // 仅管理员可以拖动书签
+                if (currentUser in adminUsers) {
+                    Sortable.create(bookmarkContainer, {
+                        animation: 150,
+                        onEnd(evt) {
+                            const movedItem = groups[group].splice(evt.oldIndex, 1)[0];
+                            groups[group].splice(evt.newIndex, 0, movedItem);
+                            saveData();
+                            loadGroups();
+                        },
+                    });
+                }
             }
 
+            // 仅管理员可以拖动分组
             if (currentUser in adminUsers) {
                 Sortable.create(groupsDiv, {
                     animation: 150,
@@ -392,10 +391,6 @@
                     },
                 });
             }
-
-            // 显示返回顶部按钮
-            const backToTopButton = document.querySelector('.back-to-top');
-            backToTopButton.style.display = 'block'; // 在有书签时显示
         }
 
         function removeGroup(groupName) {
@@ -472,10 +467,6 @@
             };
            
             input.click();
-        }
-
-        function scrollToTop() {
-            document.documentElement.scrollTop = 0; // 滚动到顶部
         }
     </script>
 </body>
