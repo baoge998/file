@@ -27,7 +27,8 @@
             text-align: center;
             position: relative;
             overflow-y: auto;
-            max-height: 80vh;
+            flex-grow: 0; /* 面板不占满整个高度 */
+            max-height: 80vh; /* 限制面板的最大高度 */
         }
         input[type="text"], input[type="password"], select {
             width: calc(100% - 22px);
@@ -42,33 +43,34 @@
             background-color: #FFFACD;
             color: black;
             border: none;
-            border-radius: 5px; /* 小方块按钮 */
+            border-radius: 5px; 
             margin: 2px;
-            font-size: 0.9em; /* 缩小字体 */
-            width: 60px; /* 固定宽度 */
-            height: 30px; /* 固定高度 */
+            font-size: 0.9em; 
+            width: 60px; 
+            height: 30px; 
             box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-            white-space: nowrap; /* 不换行 */
+            white-space: nowrap; 
+            text-align: center; /* 横向居中 */
         }
         .header-buttons {
             position: absolute;
             top: 20px;
             right: 20px;
             display: flex;
-            gap: 10px; /* 按钮间距 */
+            gap: 10px; 
         }
         .header-buttons button {
-            border-radius: 50%; /* 圆形按钮 */
-            width: 40px; /* 固定宽度 */
-            height: 40px; /* 固定高度 */
-            padding: 0; /* 移除内边距 */
-            font-size: 1.5em; /* 字体更大 */
+            border-radius: 50%; 
+            width: 40px; 
+            height: 40px; 
+            padding: 0; 
+            font-size: 1.5em; 
         }
         .controls {
             display: flex;
-            flex-direction: row; /* 水平排列 */
-            justify-content: center; /* 横向居中 */
-            flex-wrap: wrap; /* 换行 */
+            flex-direction: row; 
+            justify-content: center; 
+            flex-wrap: wrap; 
             margin-bottom: 20px;
         }
         .bookmark-container {
@@ -122,6 +124,10 @@
             margin-bottom: 20px;
             color: #FFFACD; 
         }
+        .active-button {
+            background-color: #FFA500; /* 特殊颜色 */
+            color: white; /* 字体颜色 */
+        }
     </style>
 </head>
 <body>
@@ -134,24 +140,24 @@
         <div class="date-time" id="dateTime"></div>
         <div class="quote-display" id="quoteDisplay"></div>
         <div class="controls" id="admin-controls" style="display:none;">
-           <button onclick="toggleGroupInput()">添加分组</button>
+           <button onclick="toggleGroupInput(this)">添加分组</button>
            <div id="group-input" style="display:none;">
                <input type="text" id="group-name" placeholder="分组名称">
                <button onclick="addGroup()">确认添加分组</button>
            </div>
-           <button onclick="toggleBookmarkInput()">添加书签</button>
+           <button onclick="toggleBookmarkInput(this)">添加书签</button>
            <div id="bookmark-input" style="display:none;">
                <input type="text" id="bookmark-name" placeholder="书签名称">
                <input type="text" id="bookmark-url" placeholder="书签链接">
                <select id="group-select"></select>
                <button onclick="addBookmark()">确认添加书签</button>
            </div>
-           <button onclick="toggleDeleteBookmark()">删除书签</button>
+           <button onclick="toggleDeleteBookmark(this)">删除书签</button>
            <div id="delete-bookmark" style="display:none;">
                <select id="delete-bookmark-select"></select>
                <button onclick="deleteBookmark()">删除所选书签</button>
            </div>
-           <button onclick="toggleDeleteGroup()">删除分组</button>
+           <button onclick="toggleDeleteGroup(this)">删除分组</button>
            <div id="delete-group" style="display:none;">
                <select id="delete-group-select"></select>
                <button onclick="deleteGroup()">删除所选分组</button>
@@ -256,35 +262,39 @@
            document.getElementById('logoutButton').style.display = 'inline';
        }
 
-       function toggleGroupInput() {
-         const groupInput = document.getElementById("group-input");
-         groupInput.style.display = groupInput.style.display === "none" ? "block" : "none";
+       function toggleGroupInput(button) {
+           const groupInput = document.getElementById("group-input");
+           groupInput.style.display = groupInput.style.display === "none" ? "block" : "none";
+           button.classList.toggle('active-button'); // 切换特殊颜色
        }
 
-       function toggleBookmarkInput() {
-         const bookmarkInput = document.getElementById("bookmark-input");
-         bookmarkInput.style.display = bookmarkInput.style.display === "none" ? "block" : "none";
-         const groupSelect = document.getElementById("group-select");
-         groupSelect.innerHTML = '';
+       function toggleBookmarkInput(button) {
+           const bookmarkInput = document.getElementById("bookmark-input");
+           bookmarkInput.style.display = bookmarkInput.style.display === "none" ? "block" : "none";
+           button.classList.toggle('active-button'); // 切换特殊颜色
+           const groupSelect = document.getElementById("group-select");
+           groupSelect.innerHTML = '';
          
-         for (const group in groups) {
-             const option = document.createElement("option");
-             option.value = group;
-             option.textContent = group;
-             groupSelect.appendChild(option);
-         }
+           for (const group in groups) {
+               const option = document.createElement("option");
+               option.value = group;
+               option.textContent = group;
+               groupSelect.appendChild(option);
+           }
        }
 
-       function toggleDeleteBookmark() {
-         const deleteBookmarkDiv = document.getElementById("delete-bookmark");
-         deleteBookmarkDiv.style.display = deleteBookmarkDiv.style.display === "none" ? "block" : "none";
-         updateDeleteBookmarkSelect();
+       function toggleDeleteBookmark(button) {
+           const deleteBookmarkDiv = document.getElementById("delete-bookmark");
+           deleteBookmarkDiv.style.display = deleteBookmarkDiv.style.display === "none" ? "block" : "none";
+           button.classList.toggle('active-button'); // 切换特殊颜色
+           updateDeleteBookmarkSelect();
        }
 
-       function toggleDeleteGroup() {
-         const deleteGroupDiv = document.getElementById("delete-group");
-         deleteGroupDiv.style.display = deleteGroupDiv.style.display === "none" ? "block" : "none";
-         updateDeleteGroupSelect();
+       function toggleDeleteGroup(button) {
+           const deleteGroupDiv = document.getElementById("delete-group");
+           deleteGroupDiv.style.display = deleteGroupDiv.style.display === "none" ? "block" : "none";
+           button.classList.toggle('active-button'); // 切换特殊颜色
+           updateDeleteGroupSelect();
        }
 
        function addGroup() {
