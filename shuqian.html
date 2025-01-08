@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宝哥书签管理系统</title>
+    <title>书签管理系统</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
         body {
@@ -136,7 +136,7 @@
             <button onclick="toggleSettings()">⚙</button>
             <button id="logoutButton" onclick="logout()">❌</button>
         </div>
-        <h2 id="username-display">宝哥书签管理系统</h2>
+        <h2 id="username-display">书签管理系统</h2>
         <div class="date-time" id="dateTime"></div>
         <div class="quote-display" id="quoteDisplay"></div>
         <div class="controls" id="admin-controls" style="display:none;">
@@ -170,9 +170,9 @@
 
     <script>
         const users = {
-            "admin": "admin123",
-            "user1": "password456",
-            "user2": "letmein789"
+            "admin": "admin",
+            "baoge": "baoge",
+            "user": "user"
         };
         let currentUser = localStorage.getItem('lastUser') || null;
         let groups = {};
@@ -304,7 +304,7 @@
         window.onload = function () {
             document.getElementById('bookmark-manager').style.display = 'block';
             updateQuote();
-            setInterval(updateQuote, 15000);
+            setInterval(updateQuote, 8000);
             updateDateTime();
             setInterval(updateDateTime, 1000);
 
@@ -359,7 +359,7 @@
             currentUser = null;
             localStorage.removeItem('lastUser');
             document.getElementById('admin-controls').style.display = 'none';
-            document.getElementById('username-display').textContent = "宝哥书签管理系统";
+            document.getElementById('username-display').textContent = "书签管理系统";
             groups = {};
             loadGroups();
             document.getElementById('logoutButton').style.display = 'inline';
