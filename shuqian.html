@@ -27,8 +27,8 @@
             text-align: center;
             position: relative;
             overflow-y: auto;
-            flex-grow: 0; /* 面板不占满整个高度 */
-            max-height: 80vh; /* 限制面板的最大高度 */
+            flex-grow: 0;
+            max-height: 80vh;
         }
         input[type="text"], input[type="password"], select {
             width: calc(100% - 22px);
@@ -46,7 +46,7 @@
             border-radius: 5px; 
             margin: 2px;
             font-size: 0.9em; 
-            width: 60px; 
+            width: 80px; 
             height: 30px; 
             box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
             white-space: nowrap; 
@@ -140,358 +140,354 @@
         <div class="date-time" id="dateTime"></div>
         <div class="quote-display" id="quoteDisplay"></div>
         <div class="controls" id="admin-controls" style="display:none;">
-           <button onclick="toggleGroupInput(this)">添加分组</button>
-           <div id="group-input" style="display:none;">
-               <input type="text" id="group-name" placeholder="分组名称">
-               <button onclick="addGroup()">确认添加分组</button>
-           </div>
-           <button onclick="toggleBookmarkInput(this)">添加书签</button>
-           <div id="bookmark-input" style="display:none;">
-               <input type="text" id="bookmark-name" placeholder="书签名称">
-               <input type="text" id="bookmark-url" placeholder="书签链接">
-               <select id="group-select"></select>
-               <button onclick="addBookmark()">确认添加书签</button>
-           </div>
-           <button onclick="toggleDeleteBookmark(this)">删除书签</button>
-           <div id="delete-bookmark" style="display:none;">
-               <select id="delete-bookmark-select"></select>
-               <button onclick="deleteBookmark()">删除所选书签</button>
-           </div>
-           <button onclick="toggleDeleteGroup(this)">删除分组</button>
-           <div id="delete-group" style="display:none;">
-               <select id="delete-group-select"></select>
-               <button onclick="deleteGroup()">删除所选分组</button>
-           </div>
-           <button onclick="exportBookmarks()">导出书签</button>
-           <button onclick="importBookmarks()">导入书签</button>
-       </div>
-       <div id="groups" class="scrollable"></div>
-   </div>
+            <button onclick="toggleBookmarkInput(this)">添加书签</button>
+            <div id="bookmark-input" style="display:none;">
+                <input type="text" id="bookmark-name" placeholder="书签名称">
+                <input type="text" id="bookmark-url" placeholder="书签链接">
+                <select id="group-select"></select>
+                <button onclick="addBookmark()">确认添加</button>
+            </div>
+            <button onclick="toggleDeleteBookmark(this)">删除书签</button>
+            <div id="delete-bookmark" style="display:none;">
+                <select id="delete-bookmark-select"></select>
+                <button onclick="deleteBookmark()">删除</button>
+            </div>
+            <button onclick="toggleGroupInput(this)">添加分组</button>
+            <div id="group-input" style="display:none;">
+                <input type="text" id="group-name" placeholder="分组名称">
+                <button onclick="addGroup()">确认添加</button>
+            </div>
+            <button onclick="toggleDeleteGroup(this)">删除分组</button>
+            <div id="delete-group" style="display:none;">
+                <select id="delete-group-select"></select>
+                <button onclick="deleteGroup()">删除</button>
+            </div>
+            <button onclick="importBookmarks()">导入书签</button>
+            <button onclick="exportBookmarks()">导出书签</button>
+        </div>
+        <div id="groups" class="scrollable"></div>
+    </div>
 
-   <script>
-       const users = {
-           "admin": "admin123",
-           "user1": "password456",
-           "user2": "letmein789"
-       };
-       let currentUser = localStorage.getItem('lastUser') || null;
-       let groups = {};
-       
-       let quotes = [
-           "生活中只有一种英雄主义，那就是在认清生活真相之后依然热爱生活。",
-           "成功的秘诀在于坚持自己的目标和信念。",
-           "不要为小事而烦恼，生活本来就充满挑战。",
-           "未来属于那些相信自己梦想之美的人。",
-           "用心去做，才能真正创造出属于自己的价值。",
-           "人生不是等待风暴过去，而是学会在风暴中翩翩起舞。",
-           "每一次失败都是离成功更近一步。",
-           "生活的意义在于追求，你的目标是什么？",
-           "真正的强者不是没有眼泪的人，而是含着泪水奔跑的人。",
-           "只要路是对的，就不怕路远。",
-           "成功是克服恐惧和不安的结果。",
-           "伟大的成就不是来自于力量，而是来自于坚持。",
-           "人生的每一次经历都是一次成长。",
-           "保持微笑，面对生活中的每一个挑战。",
-           "你所做的每一件小事，都会影响到未来。",
-           "努力不一定成功，但放弃一定失败。"
-       ];
-       
-       let currentQuoteIndex = 0;
+    <script>
+        const users = {
+            "admin": "admin123",
+            "user1": "password456",
+            "user2": "letmein789"
+        };
+        let currentUser = localStorage.getItem('lastUser') || null;
+        let groups = {};
+        
+        let quotes = [
+            "生活中只有一种英雄主义，那就是在认清生活真相之后依然热爱生活。",
+            "成功的秘诀在于坚持自己的目标和信念。",
+            "不要为小事而烦恼，生活本来就充满挑战。",
+            "未来属于那些相信自己梦想之美的人。",
+            "用心去做，才能真正创造出属于自己的价值。",
+            "人生不是等待风暴过去，而是学会在风暴中翩翩起舞。",
+            "每一次失败都是离成功更近一步。",
+            "生活的意义在于追求，你的目标是什么？",
+            "真正的强者不是没有眼泪的人，而是含着泪水奔跑的人。",
+            "只要路是对的，就不怕路远。",
+            "成功是克服恐惧和不安的结果。",
+            "伟大的成就不是来自于力量，而是来自于坚持。",
+            "人生的每一次经历都是一次成长。",
+            "保持微笑，面对生活中的每一个挑战。",
+            "你所做的每一件小事，都会影响到未来。",
+            "努力不一定成功，但放弃一定失败。"
+        ];
+        
+        let currentQuoteIndex = 0;
 
-       window.onload = function () {
-           document.getElementById('bookmark-manager').style.display = 'block';
-           updateQuote();
-           setInterval(updateQuote, 15000);
-           updateDateTime();
-           setInterval(updateDateTime, 1000);
+        window.onload = function () {
+            document.getElementById('bookmark-manager').style.display = 'block';
+            updateQuote();
+            setInterval(updateQuote, 15000);
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
 
-           if (currentUser) {
-               document.getElementById('username-display').textContent = `当前用户: ${currentUser}`;
-               groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
-               loadGroups();
-               document.getElementById('logoutButton').style.display = 'inline';
-           }
-       };
+            if (currentUser) {
+                document.getElementById('username-display').textContent = `当前用户: ${currentUser}`;
+                groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
+                loadGroups();
+                document.getElementById('logoutButton').style.display = 'inline';
+            }
+        };
 
-       function updateDateTime() {
-           const now = new Date();
-           const formattedDate = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
-           document.getElementById('dateTime').textContent = formattedDate;
-       }
+        function updateDateTime() {
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            document.getElementById('dateTime').textContent = formattedDate;
+        }
 
-       function updateQuote() {
-           const quoteDisplay = document.getElementById('quoteDisplay');
-           quoteDisplay.textContent = quotes[currentQuoteIndex];
-           currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
-       }
+        function updateQuote() {
+            const quoteDisplay = document.getElementById('quoteDisplay');
+            quoteDisplay.textContent = quotes[currentQuoteIndex];
+            currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
+        }
 
-       function toggleSettings() {
-           if (!currentUser) {
-               const username = prompt("请输入用户名");
-               const password = prompt("请输入密码");
-               
-               if (users[username] && users[username] === password) {
-                   currentUser = username;
-                   localStorage.setItem('lastUser', username);
-                   groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
-                   loadGroups();
-                   document.getElementById('username-display').textContent = `当前用户: ${username}`;
-                   document.getElementById('logoutButton').style.display = 'inline';
-               } else {
-                   alert("用户名或密码错误");
-               }
-           } else {
-               if (document.getElementById('admin-controls').style.display === 'none') {
-                   document.getElementById('admin-controls').style.display = 'block';
-                   enableDragAndDrop();
-               } else {
-                   document.getElementById('admin-controls').style.display = 'none';
-                   disableDragAndDrop();
-                   location.reload();
-               }
-           }
-       }
+        function toggleSettings() {
+            if (!currentUser) {
+                const username = prompt("请输入用户名");
+                const password = prompt("请输入密码");
+                
+                if (users[username] && users[username] === password) {
+                    currentUser = username;
+                    localStorage.setItem('lastUser', username);
+                    groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
+                    loadGroups();
+                    document.getElementById('username-display').textContent = `当前用户: ${username}`;
+                    document.getElementById('logoutButton').style.display = 'inline';
+                } else {
+                    alert("用户名或密码错误");
+                }
+            } else {
+                if (document.getElementById('admin-controls').style.display === 'none') {
+                    document.getElementById('admin-controls').style.display = 'block';
+                    enableDragAndDrop();
+                } else {
+                    document.getElementById('admin-controls').style.display = 'none';
+                    disableDragAndDrop();
+                    location.reload();
+                }
+            }
+        }
 
-       function logout() {
-           currentUser = null;
-           localStorage.removeItem('lastUser');
-           document.getElementById('admin-controls').style.display = 'none';
-           document.getElementById('username-display').textContent = "宝哥书签管理系统";
-           groups = {};
-           loadGroups();
-           document.getElementById('logoutButton').style.display = 'inline';
-       }
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('lastUser');
+            document.getElementById('admin-controls').style.display = 'none';
+            document.getElementById('username-display').textContent = "宝哥书签管理系统";
+            groups = {};
+            loadGroups();
+            document.getElementById('logoutButton').style.display = 'inline';
+        }
 
-       function toggleGroupInput(button) {
-           const groupInput = document.getElementById("group-input");
-           groupInput.style.display = groupInput.style.display === "none" ? "block" : "none";
-           button.classList.toggle('active-button'); // 切换特殊颜色
-       }
-
-       function toggleBookmarkInput(button) {
-           const bookmarkInput = document.getElementById("bookmark-input");
-           bookmarkInput.style.display = bookmarkInput.style.display === "none" ? "block" : "none";
-           button.classList.toggle('active-button'); // 切换特殊颜色
-           const groupSelect = document.getElementById("group-select");
-           groupSelect.innerHTML = '';
+        function toggleBookmarkInput(button) {
+            const bookmarkInput = document.getElementById("bookmark-input");
+            bookmarkInput.style.display = bookmarkInput.style.display === "none" ? "block" : "none";
+            button.classList.toggle('active-button');
+            const groupSelect = document.getElementById("group-select");
+            groupSelect.innerHTML = '';
          
-           for (const group in groups) {
-               const option = document.createElement("option");
-               option.value = group;
-               option.textContent = group;
-               groupSelect.appendChild(option);
-           }
-       }
+            for (const group in groups) {
+                const option = document.createElement("option");
+                option.value = group;
+                option.textContent = group;
+                groupSelect.appendChild(option);
+            }
+        }
 
-       function toggleDeleteBookmark(button) {
-           const deleteBookmarkDiv = document.getElementById("delete-bookmark");
-           deleteBookmarkDiv.style.display = deleteBookmarkDiv.style.display === "none" ? "block" : "none";
-           button.classList.toggle('active-button'); // 切换特殊颜色
-           updateDeleteBookmarkSelect();
-       }
+        function toggleDeleteBookmark(button) {
+            const deleteBookmarkDiv = document.getElementById("delete-bookmark");
+            deleteBookmarkDiv.style.display = deleteBookmarkDiv.style.display === "none" ? "block" : "none";
+            button.classList.toggle('active-button');
+            updateDeleteBookmarkSelect();
+        }
 
-       function toggleDeleteGroup(button) {
-           const deleteGroupDiv = document.getElementById("delete-group");
-           deleteGroupDiv.style.display = deleteGroupDiv.style.display === "none" ? "block" : "none";
-           button.classList.toggle('active-button'); // 切换特殊颜色
-           updateDeleteGroupSelect();
-       }
+        function toggleGroupInput(button) {
+            const groupInput = document.getElementById("group-input");
+            groupInput.style.display = groupInput.style.display === "none" ? "block" : "none";
+            button.classList.toggle('active-button');
+        }
 
-       function addGroup() {
-         const groupName = document.getElementById("group-name").value.trim();
-         
-         if (groupName) {
-             groups[groupName] = [];
-             saveData();
-             loadGroups();
-             document.getElementById("group-name").value = '';
-             document.getElementById("group-input").style.display='none';
-             
-         } else {
-             alert("请输入分组名称");
-         }
-       }
+        function toggleDeleteGroup(button) {
+            const deleteGroupDiv = document.getElementById("delete-group");
+            deleteGroupDiv.style.display = deleteGroupDiv.style.display === "none" ? "block" : "none";
+            button.classList.toggle('active-button');
+            updateDeleteGroupSelect();
+        }
 
-       function addBookmark() {
-         const name = document.getElementById("bookmark-name").value.trim();
-         const url = document.getElementById("bookmark-url").value.trim();
-         const groupName = document.getElementById("group-select").value;
+        function addGroup() {
+            const groupName = document.getElementById("group-name").value.trim();
+            if (groupName) {
+                groups[groupName] = [];
+                saveData();
+                loadGroups();
+                document.getElementById("group-name").value = '';
+                document.getElementById("group-input").style.display='none';
+            } else {
+                alert("请输入分组名称");
+            }
+        }
 
-         if (name && url && groupName) {
-             groups[groupName].push({ name, url });
-             saveData();
-             loadGroups();
-             document.getElementById("bookmark-name").value = '';
-             document.getElementById("bookmark-url").value = '';
-             document.getElementById("bookmark-input").style.display = 'none';
-             
-         } else {
-             alert("请填写书签名称、链接和选择分组");
-         }
-      }
+        function addBookmark() {
+            const name = document.getElementById("bookmark-name").value.trim();
+            const url = document.getElementById("bookmark-url").value.trim();
+            const groupName = document.getElementById("group-select").value;
 
-      function loadGroups() {
-         const groupsDiv = document.getElementById("groups");
-         groupsDiv.innerHTML = '';
+            if (name && url && groupName) {
+                groups[groupName].push({ name, url });
+                saveData();
+                loadGroups();
+                document.getElementById("bookmark-name").value = '';
+                document.getElementById("bookmark-url").value = '';
+                document.getElementById("bookmark-input").style.display = 'none';
+            } else {
+                alert("请填写书签名称、链接和选择分组");
+            }
+        }
 
-         Object.keys(groups).forEach(group => {
-             const groupDiv = document.createElement("div");
-             groupDiv.className = 'group';
-             groupDiv.innerHTML = `<div class='group-title'>【${group}】</div>`;
-             
-             const bookmarkContainer = document.createElement("div");
-             bookmarkContainer.className = 'bookmark-container';
+        function loadGroups() {
+            const groupsDiv = document.getElementById("groups");
+            groupsDiv.innerHTML = '';
 
-             groups[group].forEach((bookmark) => {
-                 const card = document.createElement("div");
-                 card.className = 'bookmark-card';
-                 card.innerHTML = `<strong>${bookmark.name}</strong>`;
-                 card.onclick = function() { window.open(bookmark.url, '_blank'); };
+            Object.keys(groups).forEach(group => {
+                const groupDiv = document.createElement("div");
+                groupDiv.className = 'group';
+                groupDiv.innerHTML = `<div class='group-title'>【${group}】</div>`;
+                
+                const bookmarkContainer = document.createElement("div");
+                bookmarkContainer.className = 'bookmark-container';
 
-                 bookmarkContainer.appendChild(card);
-             });
+                groups[group].forEach((bookmark) => {
+                    const card = document.createElement("div");
+                    card.className = 'bookmark-card';
+                    card.innerHTML = `<strong>${bookmark.name}</strong>`;
+                    card.onclick = function() { window.open(bookmark.url, '_blank'); };
 
-             groupDiv.appendChild(bookmarkContainer);
-             groupsDiv.appendChild(groupDiv);
-         });
+                    bookmarkContainer.appendChild(card);
+                });
 
-         updateDeleteBookmarkSelect();
-      }
+                groupDiv.appendChild(bookmarkContainer);
+                groupsDiv.appendChild(groupDiv);
+            });
 
-      function updateDeleteBookmarkSelect() {
-         const select = document.getElementById("delete-bookmark-select");
-         select.innerHTML = '';
-         
-         for (const group in groups) {
-             groups[group].forEach((bookmark) => {
-                 const option = document.createElement("option");
-                 option.value = bookmark.name;
-                 option.textContent = `【${group}】: ${bookmark.name}`;
-                 select.appendChild(option);
-             });
-         }
-      }
+            updateDeleteBookmarkSelect();
+        }
 
-      function deleteBookmark() {
-         const select = document.getElementById("delete-bookmark-select");
-         const bookmarkName = select.value;
+        function updateDeleteBookmarkSelect() {
+            const select = document.getElementById("delete-bookmark-select");
+            select.innerHTML = '';
+            
+            for (const group in groups) {
+                groups[group].forEach((bookmark) => {
+                    const option = document.createElement("option");
+                    option.value = bookmark.name;
+                    option.textContent = `【${group}】: ${bookmark.name}`;
+                    select.appendChild(option);
+                });
+            }
+        }
 
-         for (const group in groups) {
-             const index = groups[group].findIndex(b => b.name === bookmarkName);
+        function deleteBookmark() {
+            const select = document.getElementById("delete-bookmark-select");
+            const bookmarkName = select.value;
 
-             if (index !== -1) {
-                 groups[group].splice(index, 1);
-                 saveData();
-                 loadGroups();
+            for (const group in groups) {
+                const index = groups[group].findIndex(b => b.name === bookmarkName);
 
-                 alert(`书签 "${bookmarkName}" 已删除`);
-                 return;
-             }
-         }
-         
-         alert("未找到该书签");
-      }
+                if (index !== -1) {
+                    groups[group].splice(index, 1);
+                    saveData();
+                    loadGroups();
+                    alert(`书签 "${bookmarkName}" 已删除`);
+                    return;
+                }
+            }
+            
+            alert("未找到该书签");
+        }
 
-      function updateDeleteGroupSelect() {
-         const select = document.getElementById("delete-group-select");
-         select.innerHTML = '';
+        function updateDeleteGroupSelect() {
+            const select = document.getElementById("delete-group-select");
+            select.innerHTML = '';
 
-         for (const group in groups) {
-             const option = document.createElement("option");
-             option.value = group;
-             option.textContent = group;
-             select.appendChild(option);
-         }
-      }
+            for (const group in groups) {
+                const option = document.createElement("option");
+                option.value = group;
+                option.textContent = group;
+                select.appendChild(option);
+            }
+        }
 
-      function deleteGroup() {
-         const select = document.getElementById("delete-group-select");
-         const groupName = select.value;
+        function deleteGroup() {
+            const select = document.getElementById("delete-group-select");
+            const groupName = select.value;
 
-         if (groupName && groups[groupName]) {
-             if (confirm(`确定要删除分组 "${groupName}" 吗？`)) {
-                 delete groups[groupName];
-                 saveData();
-                 loadGroups();
-             }
-         } else {
-             alert("未找到该分组");
-         }
-      }
+            if (groupName && groups[groupName]) {
+                if (confirm(`确定要删除分组 "${groupName}" 吗？`)) {
+                    delete groups[groupName];
+                    saveData();
+                    loadGroups();
+                }
+            } else {
+                alert("未找到该分组");
+            }
+        }
 
-      function saveData() {
-          localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
-      }
+        function saveData() {
+            localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
+        }
 
-      function enableDragAndDrop() {
-          const bookmarkContainers = document.querySelectorAll('.bookmark-container');
-          bookmarkContainers.forEach(container => {
-              new Sortable(container, {
-                  animation: 150,
-                  ghostClass: 'blue-background-class',
-                  onEnd: saveData
-              });
-          });
+        function enableDragAndDrop() {
+            const bookmarkContainers = document.querySelectorAll('.bookmark-container');
+            bookmarkContainers.forEach(container => {
+                new Sortable(container, {
+                    animation: 150,
+                    ghostClass: 'blue-background-class',
+                    onEnd: saveData
+                });
+            });
 
-          new Sortable(document.getElementById("groups"), {
-              animation: 150,
-              ghostClass: 'blue-background-class',
-              onEnd: saveData
-          });
-      }
+            new Sortable(document.getElementById("groups"), {
+                animation: 150,
+                ghostClass: 'blue-background-class',
+                onEnd: saveData
+            });
+        }
 
-      function disableDragAndDrop() {
-          const bookmarkContainers = document.querySelectorAll('.bookmark-container');
-          bookmarkContainers.forEach(container => {
-              const sortableInstance = Sortable.get(container);
-              if (sortableInstance) {
-                  sortableInstance.destroy();
-              }
-          });
-      }
+        function disableDragAndDrop() {
+            const bookmarkContainers = document.querySelectorAll('.bookmark-container');
+            bookmarkContainers.forEach(container => {
+                const sortableInstance = Sortable.get(container);
+                if (sortableInstance) {
+                    sortableInstance.destroy();
+                }
+            });
+        }
 
-      function exportBookmarks() {
-          const dataStr = JSON.stringify(groups);
-          const blob = new Blob([dataStr], { type: 'application/json' });
-          const url = URL.createObjectURL(blob);
-          const username = currentUser;
-          const a = document.createElement('a');
-          a.href = url; 
-          a.download = `${username}_bookmarks.json`; 
-          a.click(); 
-          URL.revokeObjectURL(url);
-      }
+        function exportBookmarks() {
+            const dataStr = JSON.stringify(groups);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const username = currentUser;
+            const a = document.createElement('a');
+            a.href = url; 
+            a.download = `${username}_bookmarks.json`; 
+            a.click(); 
+            URL.revokeObjectURL(url);
+        }
 
-      function importBookmarks() {
-          const input = document.createElement('input');
-          input.type = 'file'; 
-          input.accept = '.json'; 
+        function importBookmarks() {
+            const input = document.createElement('input');
+            input.type = 'file'; 
+            input.accept = '.json'; 
 
-          input.onchange = e => {
-              const file = e.target.files[0];
-              const reader = new FileReader();
-              reader.onload = event => {
-                  try {
-                      const importedGroups = JSON.parse(event.target.result);
-                      for (const group in importedGroups) {
-                          if (groups[group]) {
-                              if (confirm(`分组 "${group}" 已存在，是否合并?`)) {
-                                  groups[group] = groups[group].concat(importedGroups[group]);
-                              }
-                          } else {
-                              groups[group] = importedGroups[group];
-                          }
-                      }
-                      saveData();
-                      loadGroups();
-                  } catch (error) {
-                      alert("导入失败，文件格式不正确!");
-                  }
-              };
-              reader.readAsText(file);
-          };
-          input.click();
-      }
-   </script>   
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const importedGroups = JSON.parse(event.target.result);
+                        for (const group in importedGroups) {
+                            if (groups[group]) {
+                                if (confirm(`分组 "${group}" 已存在，是否合并?`)) {
+                                    groups[group] = groups[group].concat(importedGroups[group]);
+                                }
+                            } else {
+                                groups[group] = importedGroups[group];
+                            }
+                        }
+                        saveData();
+                        loadGroups();
+                    } catch (error) {
+                        alert("导入失败，文件格式不正确!");
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+    </script>   
 </body>   
 </html>
