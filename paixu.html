@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书签排序</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4; /* 背景颜色 */
+        }
+        #bookmarkContainer {
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff; /* 面板背景颜色 */
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-width: 400px; /* 调整面板最大宽度 */
+            margin: auto; /* 居中显示 */
+        }
+        .group {
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            transition: background-color 0.3s; /* 添加过渡效果 */
+        }
+        .group h2 {
+            margin: 0;
+            cursor: move;
+            color: #00796b; /* 标题颜色 */
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0; /* 清除默认外边距 */
+        }
+        li {
+            margin: 5px 0;
+            cursor: move;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background-color 0.3s; /* 添加过渡效果 */
+        }
+        .drag-over {
+            background-color: #e0f7fa; /* 拖动时的高亮颜色 */
+        }
+        .bookmark-over {
+            background-color: #b2ebf2; /* 目标书签的高亮颜色 */
+        }
+        .button-container {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column; /* 纵向排列 */
+        }
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            background-color: #00796b; /* 按钮背景颜色 */
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s; /* 按钮过渡效果 */
+            margin-top: 10px; /* 按钮与文件输入框之间的间距 */
+        }
+        button:hover {
+            background-color: #005b4f; /* 按钮悬停效果 */
+        }
+    </style>
+</head>
+<body>
+    <div id="bookmarkContainer">
+        <h1 style="text-align: center;">书签自由排序</h1>
+        <div class="button-container">
+            <input type="file" id="fileInput" accept=".json">
+            <button id="importButton">导入书签文件</button>
+            <button id="exportButton" style="display: none;">导出排序后书签文件</button>
+        </div>
+        
+        <div id="bookmarksArea"></div>
+    </div>
+
+    <script>
+        let bookmarks = {};
+        let draggedBookmark = null;
+
+        document.getElementById("importButton").addEventListener("click", () => {
+            const fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("请先选择一个文件！");
+                return;
+            }
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                try {
+                    bookmarks = JSON.parse(event.target.result);
+                    renderBookmarks();
+                    document.getElementById("exportButton").style.display = "block";
+                } catch (error) {
+                    alert("文件格式不正确，请确保是有效的 JSON 文件。");
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        function renderBookmarks() {
+            const bookmarksArea = document.getElementById("bookmarksArea");
+            bookmarksArea.innerHTML = '';
+            for (const group in bookmarks) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'group';
+
+                const groupTitle = document.createElement('h2');
+                groupTitle.textContent = group;
+                groupTitle.setAttribute('draggable', 'true');
+                groupTitle.addEventListener('dragstart', handleGroupDragStart);
+                groupTitle.addEventListener('dragover', handleGroupDragOver);
+                groupTitle.addEventListener('drop', handleGroupDrop);
+                groupTitle.addEventListener('dragleave', handleDragLeave);
+                
+                groupDiv.appendChild(groupTitle);
+
+                const ul = document.createElement('ul');
+                ul.setAttribute('droppable', 'true');
+                ul.addEventListener('dragover', handleBookmarkDragOver);
+                ul.addEventListener('drop', handleBookmarkDrop);
+                ul.addEventListener('dragleave', handleDragLeave);
+
+                bookmarks[group].forEach((bookmark, index) => {
+                    const li = document.createElement('li');
+                    li.textContent = bookmark.name;
+                    li.setAttribute('draggable', 'true');
+                    li.setAttribute('data-group', group);
+                    li.setAttribute('data-index', index);
+                    li.addEventListener('dragstart', handleBookmarkDragStart);
+                    li.addEventListener('dragover', handleBookmarkDragOver);
+                    li.addEventListener('drop', handleBookmarkDrop);
+                    li.addEventListener('dragleave', handleDragLeave);
+                    ul.appendChild(li);
+                });
+                groupDiv.appendChild(ul);
+                bookmarksArea.appendChild(groupDiv);
+            }
+        }
+
+        function handleGroupDragStart(e) {
+            e.dataTransfer.setData('text/group', e.target.textContent);
+        }
+
+        function handleGroupDragOver(e) {
+            e.preventDefault();
+            e.target.closest('.group').style.backgroundColor = '#e0f7fa'; // 高亮目标分组
+        }
+
+        function handleGroupDrop(e) {
+            e.preventDefault();
+            const draggedGroup = e.dataTransfer.getData('text/group');
+            const targetGroup = e.target.closest('.group').querySelector('h2').textContent;
+
+            if (draggedGroup !== targetGroup) {
+                const groupKeys = Object.keys(bookmarks);
+                const draggedIndex = groupKeys.indexOf(draggedGroup);
+                const targetIndex = groupKeys.indexOf(targetGroup);
+                
+                // 移动分组
+                const [movedGroup] = groupKeys.splice(draggedIndex, 1); // 移除拖动的分组
+                groupKeys.splice(targetIndex, 0, movedGroup); // 在目标位置插入
+
+                // 重新构建 bookmarks
+                const newBookmarks = {};
+                groupKeys.forEach(key => {
+                    newBookmarks[key] = bookmarks[key];
+                });
+                bookmarks = newBookmarks;
+
+                renderBookmarks();
+            }
+            e.target.closest('.group').style.backgroundColor = ''; // 清除高亮
+        }
+
+        function handleBookmarkDragStart(e) {
+            draggedBookmark = {
+                group: e.target.dataset.group,
+                index: e.target.dataset.index,
+                name: e.target.textContent
+            };
+            e.dataTransfer.setData('text/plain', JSON.stringify(draggedBookmark));
+        }
+
+        function handleBookmarkDragOver(e) {
+            e.preventDefault();
+            const target = e.target.closest('li');
+            if (target) {
+                target.classList.add('bookmark-over'); // 高亮目标书签
+            }
+        }
+
+        function handleBookmarkDrop(e) {
+            e.preventDefault();
+            const targetGroup = e.target.closest('.group').querySelector('h2').textContent;
+            const targetIndex = Array.from(e.target.closest('ul').children).indexOf(e.target.closest('li'));
+
+            // 将书签插入到目标书签下方
+            if (targetGroup === draggedBookmark.group) {
+                // 如果目标区域是同一组
+                bookmarks[draggedBookmark.group].splice(draggedBookmark.index, 1); // 移除原位置
+                bookmarks[draggedBookmark.group].splice(targetIndex + (targetIndex === bookmarks[draggedBookmark.group].length ? 0 : 1), 0, { name: draggedBookmark.name }); // 插入到目标书签下方
+            } else {
+                // 移动到不同组
+                bookmarks[targetGroup].push({ name: draggedBookmark.name });
+                bookmarks[draggedBookmark.group].splice(draggedBookmark.index, 1); // 移除原位置
+            }
+            renderBookmarks();
+
+            // 清除高亮
+            const allBookmarks = e.target.closest('ul').querySelectorAll('li');
+            allBookmarks.forEach(bookmark => bookmark.classList.remove('bookmark-over'));
+            draggedBookmark = null; // 清除拖动的书签信息
+        }
+
+        function handleDragLeave(e) {
+            e.target.closest('.group').style.backgroundColor = ''; // 清除高亮
+            const target = e.target.closest('li');
+            if (target) {
+                target.classList.remove('bookmark-over'); // 清除书签高亮
+            }
+        }
+
+        document.getElementById("exportButton").addEventListener("click", () => {
+            const json = JSON.stringify(bookmarks, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'sorted_bookmarks.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
