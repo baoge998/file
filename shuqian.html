@@ -103,6 +103,7 @@
         }
         .group-title { 
             font-weight: bold; 
+            color: #FFD700; /* 字体颜色修改为金色 */
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -170,16 +171,14 @@
 
     <script>
         const users = {
-            "admin": "admin",
-            "baoge": "baoge",
-             "gui": "gui",
-
+            "admin": "wsb123456",
+            "baoge": "wsb123456",
+            "gui": "gui",
         };
         let currentUser = localStorage.getItem('lastUser') || null;
         let groups = {};
-        
         let quotes = [
-            "生活中只有一种英雄主义，那就是在认清生活真相之后依然热爱生活。 — 罗曼·罗兰",
+                        "生活中只有一种英雄主义，那就是在认清生活真相之后依然热爱生活。 — 罗曼·罗兰",
 "成功的秘诀在于坚持自己的目标和信念。 — 乔治·华盛顿",
 "不要为小事而烦恼，生活本来就充满挑战。 — 乔治·华盛顿",
 "未来属于那些相信自己梦想之美的人。 — 埃莉诺·罗斯福",
@@ -299,8 +298,7 @@
 "每一个成功者都有一个开始，勇于开始，才能找到成功的路。 — 佚名",
 "努力不一定成功，但放弃一定失败。 — 佚名",
         ];
-        
-        let currentQuoteIndex = 0;
+        let currentQuoteIndex = parseInt(localStorage.getItem('currentQuoteIndex')) || 0;
 
         window.onload = function () {
             document.getElementById('bookmark-manager').style.display = 'block';
@@ -314,6 +312,11 @@
                 groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
                 loadGroups();
                 document.getElementById('logoutButton').style.display = 'inline';
+                
+                // 检查管理员控制是否应可见
+                if (document.getElementById('admin-controls').style.display === 'block') {
+                    enableDragAndDrop();
+                }
             }
         };
 
@@ -326,6 +329,7 @@
         function updateQuote() {
             const quoteDisplay = document.getElementById('quoteDisplay');
             quoteDisplay.textContent = quotes[currentQuoteIndex];
+            localStorage.setItem('currentQuoteIndex', currentQuoteIndex); // 保存当前索引
             currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
         }
 
@@ -333,7 +337,7 @@
             if (!currentUser) {
                 const username = prompt("请输入用户名");
                 const password = prompt("请输入密码");
-                
+
                 if (users[username] && users[username] === password) {
                     currentUser = username;
                     localStorage.setItem('lastUser', username);
@@ -372,7 +376,7 @@
             button.classList.toggle('active-button');
             const groupSelect = document.getElementById("group-select");
             groupSelect.innerHTML = '';
-         
+
             for (const group in groups) {
                 const option = document.createElement("option");
                 option.value = group;
@@ -408,7 +412,8 @@
                 saveData();
                 loadGroups();
                 document.getElementById("group-name").value = '';
-                document.getElementById("group-input").style.display='none';
+                document.getElementById("group-input").style.display = 'none';
+                setTimeout(() => location.reload(), 100); // 刷新页面
             } else {
                 alert("请输入分组名称");
             }
@@ -426,6 +431,7 @@
                 document.getElementById("bookmark-name").value = '';
                 document.getElementById("bookmark-url").value = '';
                 document.getElementById("bookmark-input").style.display = 'none';
+                setTimeout(() => location.reload(), 100); // 刷新页面
             } else {
                 alert("请填写书签名称、链接和选择分组");
             }
@@ -439,7 +445,7 @@
                 const groupDiv = document.createElement("div");
                 groupDiv.className = 'group';
                 groupDiv.innerHTML = `<div class='group-title'>【${group}】</div>`;
-                
+
                 const bookmarkContainer = document.createElement("div");
                 bookmarkContainer.className = 'bookmark-container';
 
@@ -462,7 +468,7 @@
         function updateDeleteBookmarkSelect() {
             const select = document.getElementById("delete-bookmark-select");
             select.innerHTML = '';
-            
+
             for (const group in groups) {
                 groups[group].forEach((bookmark) => {
                     const option = document.createElement("option");
@@ -485,10 +491,11 @@
                     saveData();
                     loadGroups();
                     alert(`书签 "${bookmarkName}" 已删除`);
+                    setTimeout(() => location.reload(), 100); // 刷新页面
                     return;
                 }
             }
-            
+
             alert("未找到该书签");
         }
 
@@ -513,6 +520,7 @@
                     delete groups[groupName];
                     saveData();
                     loadGroups();
+                    setTimeout(() => location.reload(), 100); // 刷新页面
                 }
             } else {
                 alert("未找到该分组");
