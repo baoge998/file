@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>书签管理系统</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -50,7 +49,7 @@
             height: 30px; 
             box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
             white-space: nowrap; 
-            text-align: center; /* 横向居中 */
+            text-align: center;
         }
         .header-buttons {
             position: absolute;
@@ -103,7 +102,7 @@
         }
         .group-title { 
             font-weight: bold; 
-            color: #FFD700; /* 字体颜色修改为金色 */
+            color: #FFD700; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -126,8 +125,8 @@
             color: #FFFACD; 
         }
         .active-button {
-            background-color: #FFA500; /* 特殊颜色 */
-            color: white; /* 字体颜色 */
+            background-color: #FFA500; 
+            color: white; 
         }
     </style>
 </head>
@@ -135,7 +134,6 @@
     <div id="bookmark-manager">
         <div class="header-buttons">
             <button onclick="toggleSettings()">⚙</button>
-            <button id="logoutButton" onclick="logout()">❌</button>
         </div>
         <h2 id="username-display">书签管理系统</h2>
         <div class="date-time" id="dateTime"></div>
@@ -167,6 +165,15 @@
             <button onclick="exportBookmarks()">导出书签</button>
         </div>
         <div id="groups" class="scrollable"></div>
+        <div class="header-buttons">
+            <button id="helper-toggle" onclick="toggleHelper()">≡</button>
+            <div id="helper-buttons" style="display: none;">
+                <button onclick="toggleSettings()">⚙</button>
+                <button id="help-doc" onclick="showHelp()">✌</button>
+                <button id="free-sort">⇅</button>
+                <button id="logoutButton" onclick="logout()">❌</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -178,7 +185,7 @@
         let currentUser = localStorage.getItem('lastUser') || null;
         let groups = {};
         let quotes = [
-                        "生活中只有一种英雄主义，那就是在认清生活真相之后依然热爱生活。 — 罗曼·罗兰",
+            "生活中只有一种英雄主义，那就是在认清生活真相之后依然热爱生活。 — 罗曼·罗兰",
 "成功的秘诀在于坚持自己的目标和信念。 — 乔治·华盛顿",
 "不要为小事而烦恼，生活本来就充满挑战。 — 乔治·华盛顿",
 "未来属于那些相信自己梦想之美的人。 — 埃莉诺·罗斯福",
@@ -308,15 +315,30 @@
             setInterval(updateDateTime, 1000);
 
             if (currentUser) {
-                document.getElementById('username-display').textContent = `当前用户: ${currentUser}`;
+                document.getElementById('username-display').textContent = `在线用户: ${currentUser}`;
                 groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
                 loadGroups();
                 document.getElementById('logoutButton').style.display = 'inline';
-                
-                // 检查管理员控制是否应可见
-                if (document.getElementById('admin-controls').style.display === 'block') {
-                    enableDragAndDrop();
-                }
+            }
+        };
+
+        function toggleHelper() {
+            const helperButtons = document.getElementById('helper-buttons');
+            helperButtons.style.display = helperButtons.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showHelp() {
+            alert("祝各位大佬体验愉快！（使用过程中有疑问随时联系作者，给你发送使用教程文档）");
+        }
+
+        document.getElementById('free-sort').onclick = () => {
+            const password = prompt("请输入口令以访问自由排序功能（如需口令请联系宝哥）");
+            const correctPassword = "baoge888"; 
+
+            if (password === correctPassword) {
+                window.open("https://file.baoge.rr.nu/paixu"); 
+            } else {
+                alert("口令错误！");
             }
         };
 
@@ -329,7 +351,7 @@
         function updateQuote() {
             const quoteDisplay = document.getElementById('quoteDisplay');
             quoteDisplay.textContent = quotes[currentQuoteIndex];
-            localStorage.setItem('currentQuoteIndex', currentQuoteIndex); // 保存当前索引
+            localStorage.setItem('currentQuoteIndex', currentQuoteIndex);
             currentQuoteIndex = (currentQuoteIndex + 1) % quotes.length;
         }
 
@@ -343,18 +365,15 @@
                     localStorage.setItem('lastUser', username);
                     groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
                     loadGroups();
-                    document.getElementById('username-display').textContent = `当前用户: ${username}`;
+                    document.getElementById('username-display').textContent = `在线用户: ${username}`;
                     document.getElementById('logoutButton').style.display = 'inline';
                 } else {
                     alert("用户名或密码错误");
                 }
             } else {
-                if (document.getElementById('admin-controls').style.display === 'none') {
-                    document.getElementById('admin-controls').style.display = 'block';
-                    enableDragAndDrop();
-                } else {
-                    document.getElementById('admin-controls').style.display = 'none';
-                    disableDragAndDrop();
+                const adminControls = document.getElementById('admin-controls');
+                adminControls.style.display = adminControls.style.display === 'none' ? 'block' : 'none';
+                if (adminControls.style.display === 'none') {
                     location.reload();
                 }
             }
@@ -367,7 +386,7 @@
             document.getElementById('username-display').textContent = "书签管理系统";
             groups = {};
             loadGroups();
-            document.getElementById('logoutButton').style.display = 'inline';
+            document.getElementById('logoutButton').style.display = 'none';
         }
 
         function toggleBookmarkInput(button) {
@@ -413,7 +432,7 @@
                 loadGroups();
                 document.getElementById("group-name").value = '';
                 document.getElementById("group-input").style.display = 'none';
-                setTimeout(() => location.reload(), 100); // 刷新页面
+                setTimeout(() => location.reload(), 100);
             } else {
                 alert("请输入分组名称");
             }
@@ -431,7 +450,7 @@
                 document.getElementById("bookmark-name").value = '';
                 document.getElementById("bookmark-url").value = '';
                 document.getElementById("bookmark-input").style.display = 'none';
-                setTimeout(() => location.reload(), 100); // 刷新页面
+                setTimeout(() => location.reload(), 100);
             } else {
                 alert("请填写书签名称、链接和选择分组");
             }
@@ -491,7 +510,7 @@
                     saveData();
                     loadGroups();
                     alert(`书签 "${bookmarkName}" 已删除`);
-                    setTimeout(() => location.reload(), 100); // 刷新页面
+                    setTimeout(() => location.reload(), 100);
                     return;
                 }
             }
@@ -520,7 +539,7 @@
                     delete groups[groupName];
                     saveData();
                     loadGroups();
-                    setTimeout(() => location.reload(), 100); // 刷新页面
+                    setTimeout(() => location.reload(), 100);
                 }
             } else {
                 alert("未找到该分组");
@@ -529,33 +548,6 @@
 
         function saveData() {
             localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
-        }
-
-        function enableDragAndDrop() {
-            const bookmarkContainers = document.querySelectorAll('.bookmark-container');
-            bookmarkContainers.forEach(container => {
-                new Sortable(container, {
-                    animation: 150,
-                    ghostClass: 'blue-background-class',
-                    onEnd: saveData
-                });
-            });
-
-            new Sortable(document.getElementById("groups"), {
-                animation: 150,
-                ghostClass: 'blue-background-class',
-                onEnd: saveData
-            });
-        }
-
-        function disableDragAndDrop() {
-            const bookmarkContainers = document.querySelectorAll('.bookmark-container');
-            bookmarkContainers.forEach(container => {
-                const sortableInstance = Sortable.get(container);
-                if (sortableInstance) {
-                    sortableInstance.destroy();
-                }
-            });
         }
 
         function exportBookmarks() {
