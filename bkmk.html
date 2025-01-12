@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>书签管理系统</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -50,7 +49,7 @@
             height: 30px; 
             box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
             white-space: nowrap; 
-            text-align: center; /* 横向居中 */
+            text-align: center;
         }
         .header-buttons {
             position: absolute;
@@ -103,7 +102,7 @@
         }
         .group-title { 
             font-weight: bold; 
-            color: #FFD700; /* 字体颜色修改为金色 */
+            color: #FFD700; 
             display: flex; 
             justify-content: center; 
             align-items: center; 
@@ -126,8 +125,8 @@
             color: #FFFACD; 
         }
         .active-button {
-            background-color: #FFA500; /* 特殊颜色 */
-            color: white; /* 字体颜色 */
+            background-color: #FFA500; 
+            color: white; 
         }
     </style>
 </head>
@@ -166,7 +165,6 @@
             <button onclick="exportBookmarks()">导出书签</button>
         </div>
         <div id="groups" class="scrollable"></div>
-        <!-- 辅助按钮 -->
         <div class="header-buttons">
             <button id="helper-toggle" onclick="toggleHelper()">≡</button>
             <div id="helper-buttons" style="display: none;">
@@ -330,15 +328,15 @@
         }
 
         function showHelp() {
-            alert("1、初始界面点开右上角'≡'图标，展开四个选项，分别是：设置（❃）、帮助文档（✌），排序工具（⇅）、退出按键（✖），再次点击'≡'图标，收回所有展开图标。 2、未登录状态时，点开设置图标按键，跳出用户名/密码输入框，输入正确后进入在线用户模式。使用设置按键即可轻松切换管理模式与用户模式。3、管理模式下，可通过各个功能键来实现分组和书签的添加删除操作，支持导入导出书签列表至本地存储。4、此书签管理系统，仅提供了最轻量级的部署支持，加之为了实现电脑端跟手机端屏幕自适应特性，不方便在管理模式下直接部署排序功能，为此增加了一个排序按键。5、排序按键使用站外工具面板（作者自建）方式实现自由排序功能，通过导入本地书签列表文件，解析还原分组和书签列表文件，轻松实现分组整体拖动排序，分组内书签拖动排序，书签还可以实现跨分组排序。排序完成后一键导出排序列表，书签管理系统通过调用排序工具，导入排序书签文件，解决自由排序问题。当然，你也可以不使用排序工具，在电脑上展开书签列表文件，通过文档编辑实现新排序也是可以的；或者管理模式下通过删除添加按键也能实现。排序功能在电脑通过鼠标实现自由拖动，手机上使用不太方便。6、关于退出按键的部署，一是为了加设密码，增加私密性。二是为了实现一人多账号登录。通过输入不同的用户名/密码来使用不同的书签列表。输入用户名/密码登录到用户模式后，不点击退出（红色叉号），默认保存当前用户，下次打开，不用重新输入用户名/密码。7、此系统仅支持本终端本浏览器部署使用，不同终端，不同浏览器，使用同一套账户资料均可登录，但登录后都是空白内容，各书签列表内容可以自由部署，编辑整理完成后，及时导出书签列表文件至本地存储，此格式文件不论手机电脑，均支持导入。导入时自动检测是否存在同名分组，可自主选择分组导入。8、本系统纯粹为了个人使用方便部署，不建议推广，如需账号资料，联系作者，通过修改库文件增加账号。9、账号最好是单人使用最佳，禁止滥用，后台发现某个账号被超多终端使用，随时在后台行使超管权限，所以，且用且珍惜。10、欢迎提出宝贵意见，帮助作者升级优化，希望自定义样式的，联系作者为你单独部署，可以提供三种以上其他类书签导航站的部署，最后，祝各位大佬体验愉快！"); // 可替换为实际帮助文档
+            alert("1、初始界面点开右上角'≡'图标，展开四个选项，分别是：设置（❃）、帮助文档（✌），排序工具（⇅）、退出按键（✖），再次点击'≡'图标，收回所有展开图标。 2、未登录状态时，点开设置图标按键，跳出用户名/密码输入框，输入正确后进入在线用户模式。使用设置按键即可轻松切换管理模式与用户模式。3、管理模式下，可通过各个功能键来实现分组和书签的添加删除操作，支持导入导出书签列表至本地存储。4、此书签管理系统，仅提供了最轻量级的部署支持，加之为了实现电脑端跟手机端屏幕自适应特性，不方便在管理模式下直接部署排序功能，为此增加了一个排序按键。5、排序按键使用站外工具面板（作者自建）方式实现自由排序功能，通过导入本地书签列表文件，解析还原分组和书签列表文件，轻松实现分组整体拖动排序，分组内书签拖动排序，书签还可以实现跨分组排序。排序完成后一键导出排序列表，书签管理系统通过调用排序工具，导入排序书签文件，解决自由排序问题。当然，你也可以不使用排序工具，在电脑上展开书签列表文件，通过文档编辑实现新排序也是可以的；或者管理模式下通过删除添加按键也能实现。排序功能在电脑通过鼠标实现自由拖动，手机上使用不太方便。6、关于退出按键的部署，一是为了加设密码，增加私密性。二是为了实现一人多账号登录。通过输入不同的用户名/密码来使用不同的书签列表。输入用户名/密码登录到用户模式后，不点击退出（红色叉号），默认保存当前用户，下次打开，不用重新输入用户名/密码。7、此系统仅支持本终端本浏览器部署使用，不同终端，不同浏览器，使用同一套账户资料均可登录，但登录后都是空白内容，各书签列表内容可以自由部署，编辑整理完成后，及时导出书签列表文件至本地存储，此格式文件不论手机电脑，均支持导入。导入时自动检测是否存在同名分组，可自主选择分组导入。8、本系统纯粹为了个人使用方便部署，不建议推广，如需账号资料，联系作者，通过修改库文件增加账号。9、账号最好是单人使用最佳，禁止滥用，后台发现某个账号被超多终端使用，随时在后台行使超管权限，所以，且用且珍惜。10、欢迎提出宝贵意见，帮助作者升级优化，希望自定义样式的，联系作者为你单独部署，可以提供三种以上其他类书签导航站的部署，最后，祝各位大佬体验愉快！");
         }
 
         document.getElementById('free-sort').onclick = () => {
             const password = prompt("请输入口令以访问自由排序功能（如需口令请联系宝哥）");
-            const correctPassword = "baoge888"; // 设置口令
+            const correctPassword = "baoge888"; 
 
             if (password === correctPassword) {
-                window.open("https://file.baoge.rr.nu/paixu"); // 插入链接
+                window.open("https://file.baoge.rr.nu/paixu"); 
             } else {
                 alert("口令错误！");
             }
@@ -373,12 +371,9 @@
                     alert("用户名或密码错误");
                 }
             } else {
-                if (document.getElementById('admin-controls').style.display === 'none') {
-                    document.getElementById('admin-controls').style.display = 'block';
-                    enableDragAndDrop();
-                } else {
-                    document.getElementById('admin-controls').style.display = 'none';
-                    disableDragAndDrop();
+                const adminControls = document.getElementById('admin-controls');
+                adminControls.style.display = adminControls.style.display === 'none' ? 'block' : 'none';
+                if (adminControls.style.display === 'none') {
                     location.reload();
                 }
             }
@@ -391,7 +386,7 @@
             document.getElementById('username-display').textContent = "书签管理系统";
             groups = {};
             loadGroups();
-            document.getElementById('logoutButton').style.display = 'inline';
+            document.getElementById('logoutButton').style.display = 'none';
         }
 
         function toggleBookmarkInput(button) {
@@ -553,33 +548,6 @@
 
         function saveData() {
             localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
-        }
-
-        function enableDragAndDrop() {
-            const bookmarkContainers = document.querySelectorAll('.bookmark-container');
-            bookmarkContainers.forEach(container => {
-                new Sortable(container, {
-                    animation: 150,
-                    ghostClass: 'blue-background-class',
-                    onEnd: saveData
-                });
-            });
-
-            new Sortable(document.getElementById("groups"), {
-                animation: 150,
-                ghostClass: 'blue-background-class',
-                onEnd: saveData
-            });
-        }
-
-        function disableDragAndDrop() {
-            const bookmarkContainers = document.querySelectorAll('.bookmark-container');
-            bookmarkContainers.forEach(container => {
-                const sortableInstance = Sortable.get(container);
-                if (sortableInstance) {
-                    sortableInstance.destroy();
-                }
-            });
         }
 
         function exportBookmarks() {
