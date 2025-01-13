@@ -11,8 +11,6 @@
       type="image/x-icon"
       href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAMxJREFUOE+t06FuAkEQxvH/FxpegUoeovXUoOobJLapRDaw2T1b21qwoNGUB8BW45jwDmQJENIj3F2vd0wyZjL7m2QmK2qGar7nCLSGsadIF2hfgOLTvGZFQ47A/Xt0iFFG45jI5Kp+x9acfg71v4Dc4YKHTdDqDHSAQ2ZFzKkvLdH3LyDegGYqixcsvHkt0sDiXxcRz+Y1rw7AiwVN6wB9CxpXB8SreX1VByIDS/RRBxhaonACXGyzYwo8lrzEmgZP5rS+zWcqOTWzbQ96PEURUT++WAAAAABJRU5ErkJggg=="
     />
-    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/dayjs/1.11.7/dayjs.min.js"></script> -->
-    <!-- <script src="https://cdn.jsdelivr.net/npm/js-base64@3.7.5/base64.min.js"></script> -->
     <style>
       * {
         margin: 0;
@@ -50,12 +48,6 @@
         background: #000;
         color: #ff9000;
       }
-      input.back {
-        cursor: auto;
-        background: #1b1b1b;
-        border: 1px solid #333;
-        color: #fff;
-      }
       .ftr {
         float: right;
       }
@@ -65,14 +57,6 @@
         display: flex;
         align-items: center;
         padding: 6px 0;
-      }
-      .w50 .file_list li {
-        float: left;
-        width: 31%;
-        margin-right: 2%;
-      }
-      .w50 .file_list li span.sha {
-        display: none;
       }
       .file_list li:before {
         content: "其他";
@@ -92,61 +76,6 @@
         background: #ff9000;
         color: #000;
       }
-      .file_list li.img:before {
-        content: "图片";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.video:before {
-        content: "视频";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.music:before {
-        content: "音频";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.code:before {
-        content: "代码";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.zip:before {
-        content: "压缩包";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.doc:before {
-        content: "Word";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.xls:before {
-        content: "Excel";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.ppt:before {
-        content: "PPT";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.pdf:before {
-        content: "PDF";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li.txt:before {
-        content: "文本";
-        background: #ff9000;
-        color: #000;
-      }
-      .file_list li img {
-        margin-right: 6px;
-        display: inline-block;
-        vertical-align: middle;
-      }
       .file_list li a {
         color: #fff;
         text-decoration: none;
@@ -161,21 +90,9 @@
         color: #ff9000;
         font-weight: bold;
       }
-      .file_list li.dir .del {
-        visibility: hidden;
-        pointer-events: none;
-      }
       .file_list li span {
         color: #999;
         font-size: 14px;
-      }
-      .file_list li span.sha {
-        min-width: 350px;
-        display: inline-block;
-      }
-      .file_list li span.size {
-        width: 80px;
-        display: inline-block;
       }
       .file_list li i {
         border: 1px solid #ff9000;
@@ -193,10 +110,6 @@
       .file_list li i:hover {
         background: #000;
         color: #ff9000;
-      }
-      .file-img {
-        width: 60px;
-        max-height: 60px;
       }
       li {
         list-style-type: none;
@@ -233,22 +146,6 @@
           font-size: 13px;
           margin-left: 10px;
         }
-        #rootdm {
-          min-width: 200px;
-          width: 100%;
-          margin-bottom: 10px;
-        }
-        #btn-wrap {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 5px;
-          margin-top: 5px;
-        }
-        #btn-wrap button {
-          margin: 0;
-          font-size: 13px;
-          padding: 2px 8px;
-        }
       }
       input {
         background: #1b1b1b;
@@ -278,10 +175,6 @@
       button:hover {
         border-color: #ff9000;
       }
-      button span {
-        color: #ff9000;
-        display: block;
-      }
       #file {
         display: none;
       }
@@ -300,9 +193,6 @@
         font-size: 12px;
         margin-left: 20px;
       }
-      i {
-        font-style: normal;
-      }
       .hide {
         display: none !important;
       }
@@ -319,140 +209,6 @@
         color: #ff9000;
         z-index: 9;
         font-size: 20px;
-      }
-      .drag-hint {
-        background: rgba(255, 144, 0, 0.1);
-        padding: 8px;
-        border-radius: 4px;
-        margin-bottom: 15px;
-        border: 1px dashed #ff9000;
-        color: #ff9000;
-        text-align: center;
-        animation: pulse 2s infinite;
-      }
-      @keyframes pulse {
-        0% { opacity: 0.6; }
-        50% { opacity: 1; }
-        100% { opacity: 0.6; }
-      }
-      #drop-zone {
-        transition: all 0.3s ease;
-        position: relative;
-      }
-      #drop-zone.dragover {
-        background: rgba(255, 144, 0, 0.1) !important;
-      }
-      #drop-zone.dragover:after {
-        content: '可以拖放多个文件到这里上传';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        font-size: 24px;
-        color: #ff9000;
-        pointer-events: none;
-      }
-      .empty-folder-hint {
-        text-align: center;
-        padding: 40px 20px;
-        border: 2px dashed #ff9000;
-        border-radius: 8px;
-        margin: 20px 0;
-        background: rgba(255, 144, 0, 0.05);
-        transition: all 0.3s ease;
-      }
-      .empty-folder-hint:hover {
-        background: rgba(255, 144, 0, 0.1);
-      }
-      .empty-folder-hint i {
-        font-size: 40px;
-        color: #ff9000;
-        margin-bottom: 15px;
-        display: block;
-      }
-      @media screen and (max-width: 700px) {
-        #drop-zone.dragover:after {
-          font-size: 16px;
-        }
-      }
-      #btn-wrap {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        padding: 10px;
-        max-width: 100%;
-        margin-top: 10px;
-      }
-      #btn-wrap button {
-        display: inline-flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 6px 12px;
-        border: 1px solid #30363d;
-        border-radius: 6px;
-        background: #21262d;
-        color: #c9d1d9;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        min-width: 120px;
-        max-width: 180px;
-        flex: 0 1 auto;
-      }
-      #btn-wrap button:hover {
-        background: #30363d;
-        transform: translateY(-2px);
-      }
-      #btn-wrap button.active {
-        border-color: #58a6ff;
-        background: #1f6feb;
-      }
-      .speed-info {
-        font-size: 12px;
-        color: #8b949e;
-        white-space: nowrap;
-        padding-left: 8px;
-        border-left: 1px solid #30363d;
-      }
-      @media (max-width: 768px) {
-        #btn-wrap {
-          gap: 6px;
-          padding: 8px 0;
-        }
-        
-        #btn-wrap button {
-          min-width: auto;
-          padding: 4px 8px;
-          font-size: 12px;
-        }
-        
-        .cdn-name {
-          font-size: 12px;
-        }
-        
-        .speed-info {
-          font-size: 11px;
-          padding-left: 6px;
-        }
-      }
-      .cdn-name {
-        font-size: 13px;
-        margin-right: 8px;
-        white-space: nowrap;
-      }
-      h4 {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 20px;
-      }
-      #rootdm {
-        width: 100%;
-        max-width: 100%;
-        margin: 0;
-      }
-      #btn-wrap {
-        flex: 2;
-        min-width: 300px;
       }
     </style>
   </head>
@@ -471,25 +227,16 @@
     </h4>
     <input type="file" id="file" class="filepond" name="filepond" />
     <h2>
-      
       <span onclick="addDir()" class="back">新建目录</span>
-      <span onclick="document.getElementById('file').click()" class="back"
-        >上传文件</span
-      >
+      <span onclick="document.getElementById('file').click()" class="back">上传文件</span>
       <span onclick="dirBack()" class="back">←返回</span>
       <span onclick="refresh()" class="back ftr">刷新</span>
-      <span onclick="toggleWrap()" class="back ftr">分列</span>
-      <span onclick="updateToken()" class="back ftr">设置Token</span>
-      <span onclick="updateRepo()" class="back ftr">设置Repo</span>
-      <input
-        type="text"
-        class="back ftr"
-        id="search"
-        placeholder="关键词搜索, 回车确认"
-        onkeyup="search(event)"
-      />
-      <!-- <span onclick="history.go(-1)" class="back">返回</span> -->
     </h2>
+    <!-- 新增按钮容器 -->
+    <div style="margin-bottom: 20px;">
+      <span onclick="updateToken()" class="back">设置Token</span>
+      <span onclick="updateRepo()" class="back">设置Repo</span>
+    </div>
     <div id="file_wrap">
       <ul class="file_list" id="file_list">
         加载中...
