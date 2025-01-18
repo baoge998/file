@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP检测面板</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .panel {
+            background-color: #6495ED; /*    色面板背景 */
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 90%;
+            max-width: 800px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .bookmarks {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px; /* 间距 */
+        }
+        .bookmark {
+            background-color: #fff; /* 书签背景颜色 */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px 15px; /* 内边距 */
+            text-align: center;
+            transition: background-color 0.3s, transform 0.2s;
+            white-space: nowrap; /* 防止文本换行 */
+            cursor: pointer;
+        }
+        .bookmark:hover {
+            background-color: #d1e7dd; /* 悬停时的背景颜色 */
+            transform: scale(1.05); /* 悬停时放大效果 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="panel">
+    <h1>IP检测工具汇总</h1>
+    <div class="bookmarks">
+        <!-- 初始四个链接 -->
+        <div class="bookmark" onclick="openLink('https://ipcheck.ing')">
+            <strong>IPCheck工具</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://ip.skk.moe')">
+            <strong>IP归属地查询</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://ip.sb')">
+            <strong>IP.SB查询</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://ipinfo.io')">
+            <strong>IPInfo数据</strong>
+        </div>
+
+        <!-- 新增链接 -->
+        <div class="bookmark" onclick="openLink('https://ip111.cn/')">
+            <strong>全方位IP查询</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://ip.me/')">
+            <strong>我的公共IP</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://www.itdog.cn/ping/')">
+            <strong>Ping测试工具</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://ping6.ping.pe/')">
+            <strong>IPv6 Ping测试</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://test-ipv6.com/')">
+            <strong>IPv6支持检测</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://ipw.cn/dns/')">
+            <strong>DNS查询工具</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://tcp.ping.pe/')">
+            <strong>TCP Ping测试</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://iplark.com/')">
+            <strong>IP地理位置</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://www.ping0.cc/ip/')">
+            <strong>Ping IP地址</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://whoer.net/zh')">
+            <strong>Whoer隐私检测</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://scamalytics.com/')">
+            <strong>诈骗风险分析</strong>
+        </div>
+        <div class="bookmark" onclick="openLink('https://browserleaks.com/dns')">
+            <strong>DNS泄露测试</strong>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openLink(url) {
+        window.open(url, '_blank');
+    }
+</script>
+
+</body>
+</html>
