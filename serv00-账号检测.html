@@ -48,16 +48,19 @@
             margin-top: 20px;
             display: block;
             font-size: 16px;
-            overflow-y: auto;
-            max-height: 500px;
+            overflow: hidden; /* 隐藏溢出内容 */
         }
         .result-item {
             margin-bottom: 2px; /* 调整为最小间距 */
             padding: 2px; /* 最小内边距 */
+            border: 1px solid #ccc; /* 添加边框 */
+            border-radius: 4px; /* 圆角 */
+            height: auto; /* 允许高度根据内容自动调整 */
+            overflow: hidden; /* 隐藏溢出内容 */
         }
         iframe {
             width: 100%;
-            height: 50px; /* 最小高度 */
+            height: 50px; /* 设置为固定高度 */
             border: none;
         }
     </style>
@@ -130,7 +133,7 @@
             // 创建结果项
             const resultItem = document.createElement('div');
             resultItem.className = 'result-item';
-            resultItem.innerHTML = `检测 ${account} 的结果：<br><iframe src="${apiUrl}" style="width:100%; height:50px;" frameborder="0"></iframe>`;
+            resultItem.innerHTML = `检测 ${account} 的结果：<br><iframe src="${apiUrl}" style="width:100%;" frameborder="0"></iframe>`;
             
             resultDiv.appendChild(resultItem);
             checkedAccounts.add(account);
