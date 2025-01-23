@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>serv00账号检测器</title>
+    <style>
+        body {
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #f5f5dc;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        #accountList {
+            display: none; /* 默认隐藏账号列表 */
+            margin-top: 20px;
+        }
+        .account-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px;
+            border-bottom: 1px solid #ccc;
+        }
+        button {
+            background-color: green;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        button.delete {
+            background-color: red;
+        }
+        #result {
+            margin-top: 20px;
+            display: block;
+            font-size: 16px;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        .result-item {
+            margin-bottom: 2px; /* 调整为最小间距 */
+            padding: 2px; /* 最小内边距 */
+        }
+        iframe {
+            width: 100%;
+            height: 50px; /* 最小高度 */
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>serv00账号检测器</h1>
+        <input type="text" id="usernameInput" placeholder="输入账户名" style="width: 80%; padding: 10px; margin-bottom: 10px;">
+        <button onclick="addAccount()">添加账户</button>
+        <button onclick="toggleList()">显示/隐藏列表</button>
+        <button onclick="checkAllAccounts()">检测全部账号</button>
+
+        <div id="accountList"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        let accounts = JSON.parse(localStorage.getItem('accounts')) || [];
+        let checkedAccounts = new Set(); 
+
+        function toggleList() {
+            const listDiv = document.getElementById('accountList');
+            listDiv.style.display = listDiv.style.display === 'none' || listDiv.style.display === '' ? 'block' : 'none';
+            if (listDiv.style.display === 'block') displayAccounts();
+        }
+
+        function addAccount() {
+            const usernameInput = document.getElementById('usernameInput');
+            const username = usernameInput.value.trim();
+
+            if (username === "") {
+                alert("请输入有效的账户名");
+                return;
+            }
+
+            if (accounts.includes(username)) {
+                alert("账户名已存在，请输入不同的账户名");
+                return;
+            }
+
+            accounts.push(username);
+            localStorage.setItem('accounts', JSON.stringify(accounts));
+            usernameInput.value = '';
+            displayAccounts();
+        }
+
+        function displayAccounts() {
+            const listDiv = document.getElementById('accountList');
+            listDiv.innerHTML = '';
+
+            accounts.forEach((account, index) => {
+                const accountItem = document.createElement('div');
+                accountItem.className = 'account-item';
+                accountItem.innerHTML = `
+                    <span onclick="loadContent('${account}')" style="cursor:pointer;">${account}</span> 
+                    <button class="delete" onclick="removeAccount(${index})">删除</button>
+                `;
+                listDiv.appendChild(accountItem);
+            });
+
+            listDiv.style.display = accounts.length > 0 ? 'block' : 'none';
+        }
+
+        function loadContent(account) {
+            if (checkedAccounts.has(account)) return;
+
+            const apiUrl = `https://serv00api.baoge456.us.kg/?username=${account}`;
+            const resultDiv = document.getElementById('result');
+
+            // 创建结果项
+            const resultItem = document.createElement('div');
+            resultItem.className = 'result-item';
+            resultItem.innerHTML = `检测 ${account} 的结果：<br><iframe src="${apiUrl}" style="width:100%; height:50px;" frameborder="0"></iframe>`;
+            
+            resultDiv.appendChild(resultItem);
+            checkedAccounts.add(account);
+        }
+
+        function checkAllAccounts() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+            checkedAccounts.clear();
+
+            accounts.forEach((account, index) => {
+                setTimeout(() => {
+                    loadContent(account);
+                }, index * 2000);
+            });
+        }
+
+        function removeAccount(index) {
+            accounts.splice(index, 1);
+            localStorage.setItem('accounts', JSON.stringify(accounts));
+            displayAccounts();
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            displayAccounts();
+            // 确保账号列表保持隐藏
+            document.getElementById('accountList').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
