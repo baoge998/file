@@ -182,10 +182,12 @@
         }
 
         function handleBookmarkDragStart(e) {
+            const group = e.target.dataset.group;
+            const index = e.target.dataset.index;
             draggedBookmark = {
-                group: e.target.dataset.group,
-                index: e.target.dataset.index,
-                name: e.target.textContent
+                group: group,
+                index: index,
+                bookmark: bookmarks[group][index] // 保存完整的书签对象
             };
             e.dataTransfer.setData('text/plain', JSON.stringify(draggedBookmark));
         }
@@ -207,10 +209,10 @@
             if (targetGroup === draggedBookmark.group) {
                 // 如果目标区域是同一组
                 bookmarks[draggedBookmark.group].splice(draggedBookmark.index, 1); // 移除原位置
-                bookmarks[draggedBookmark.group].splice(targetIndex + (targetIndex === bookmarks[draggedBookmark.group].length ? 0 : 1), 0, { name: draggedBookmark.name }); // 插入到目标书签下方
+                bookmarks[draggedBookmark.group].splice(targetIndex + (targetIndex === bookmarks[draggedBookmark.group].length ? 0 : 1), 0, draggedBookmark.bookmark); // 插入到目标书签下方
             } else {
                 // 移动到不同组
-                bookmarks[targetGroup].push({ name: draggedBookmark.name });
+                bookmarks[targetGroup].splice(targetIndex + (targetIndex === bookmarks[targetGroup].length ? 0 : 1), 0, draggedBookmark.bookmark); // 插入到目标书签下方
                 bookmarks[draggedBookmark.group].splice(draggedBookmark.index, 1); // 移除原位置
             }
             renderBookmarks();
