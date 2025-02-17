@@ -19,8 +19,9 @@
             <button id="downloadButton" class="bg-yellow-500 text-white p-2 rounded">导出列表</button>
             <input type="file" id="fileInput" accept=".txt" style="display: none;">
             <button id="uploadButton" class="bg-purple-500 text-white p-2 rounded">导入列表</button>
-            <button id="startMonitoring" class="bg-red-500 text-white p-2 rounded">检测全部</button>
-        </div>
+            <button id="clearListButton" class="bg-gray-500 text-white p-2 rounded">清空列表</button> <!-- 新增清空列表按钮 -->
+           <button id="startMonitoring" class="bg-red-500 text-white p-2 rounded">检测全部</button>
+                   </div>
         <ul id="websiteList" class="mt-4 hidden"></ul>
         <div id="progressContainer" style="display: none;" class="mt-4">
             <div id="progressStats" class="text-center mb-2"></div>
@@ -286,6 +287,13 @@
 
             addWebsiteToList(url, name); // 将新网站添加到本地存储
             displayWebsiteList(); // 显示当前监测的网站列表
+        });
+
+        // 清空列表按钮逻辑
+        document.getElementById('clearListButton').addEventListener('click', function() {
+            localStorage.removeItem('websites'); // 清空本地存储中的网站列表
+            displayWebsiteList(); // 更新显示列表
+            alert("列表已清空！");
         });
     </script>
 </body>
