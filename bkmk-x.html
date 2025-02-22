@@ -195,6 +195,7 @@
             </div>
             <button onclick="importBookmarks()">导入书签</button>
             <button onclick="exportBookmarks()">导出书签</button>
+            <button id="clearAllBookmarksButton" onclick="confirmClearAllBookmarks()">清空书签</button>
         </div>
         <div id="groups" class="scrollable"></div>
         <div class="header-buttons">
@@ -346,6 +347,7 @@
         ];
         let currentQuoteIndex = parseInt(localStorage.getItem('currentQuoteIndex')) || 0;
         let editBookmarkData = null; // 存储当前编辑的书签数据
+        let longPressTimer;
 
         window.onload = function () {
             document.getElementById('bookmark-manager').style.display = 'block';
@@ -359,8 +361,27 @@
                 groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
                 loadGroups();
                 document.getElementById('logoutButton').style.display = 'inline';
+                document.getElementById('clearAllBookmarksButton').style.display = 'inline'; // Show clear button
             }
+            
+            // Long press for helper toggle
+            const helperToggle = document.getElementById('helper-toggle');
+            helperToggle.addEventListener('mousedown', startLongPress);
+            helperToggle.addEventListener('mouseup', cancelLongPress);
+            helperToggle.addEventListener('mouseleave', cancelLongPress);
+            helperToggle.addEventListener('touchstart', startLongPress);
+            helperToggle.addEventListener('touchend', cancelLongPress);
         };
+
+        function startLongPress() {
+            longPressTimer = setTimeout(() => {
+                confirmClearAllBookmarksViaHelper();
+            }, 1500); // 1.5 seconds
+        }
+
+        function cancelLongPress() {
+            clearTimeout(longPressTimer);
+        }
 
         function toggleHelper() {
             const helperButtons = document.getElementById('helper-buttons');
@@ -368,7 +389,7 @@
         }
 
         function showHelp() {
-            alert("1、初始界面点开右上角'≡'图标，展开四个选项，分别是：设置（❃）、帮助文档（✌），排序工具（⇅）、退出按键（✖），再次点击'≡'图标，收回所有展开图标。 2、未登录状态时，点开设置图标按键，跳出用户名/密码输入框，输入正确后进入在线用户模式。使用设置按键即可轻松切换管理模式与用户模式。3、管理模式下，可通过各个功能键来实现分组和书签的添加删除操作，支持导入导出书签列表至本地存储。4、20250216新增加功能：右键点击（PC端）或长按（手机端）书签以修改书签名称和链接。5、此书签管理系统，仅提供了最轻量级的部署支持，加之为了实现电脑端跟手机端屏幕自适应特性，不方便在管理模式下直接部署排序功能，为此增加了一个排序按键。排序按键使用站外工具面板（作者自建）方式实现自由排序功能，通过导入本地书签列表文件，解析还原分组和书签列表文件，轻松实现分组整体拖动排序，分组内书签拖动排序，书签还可以实现跨分组排序。排序完成后一键导出排序列表，书签管理系统通过调用排序工具，导入排序书签文件，解决自由排序问题。当然，你也可以不调用排序工具，通过右键点击修改功能实现排序。排序功能在电脑通过鼠标实现自由拖动，手机上使用不太方便。6、关于退出按键的部署，一是为了加设密码，增加私密性。二是为了实现一人多账号登录。通过输入不同的用户名/密码来使用不同的书签列表。输入用户名/密码登录到用户模式后，不点击退出（红色叉号），默认保存当前用户，下次打开，不用重新输入用户名/密码。6、此系统仅支持本终端本浏览器部署使用，不同终端，不同浏览器，使用同一套账户资料均可登录，但登录后都是空白内容，各书签列表内容可以自由部署，编辑整理完成后，及时导出书签列表文件至本地存储，此格式文件不论手机电脑，均支持导入。导入时自动检测是否存在同名分组，可自主选择分组导入。8、本系统纯粹为了个人使用方便部署，不建议推广，如需账号资料，联系作者，通过修改库文件增加账号。账号最好是单人使用最佳，禁止滥用，后台发现某个账号被超多终端使用，随时在后台行使超管权限，所以，且用且珍惜。9、欢迎提出宝贵意见，帮助作者升级优化，希望自定义样式的，联系作者为你单独部署，可以提供三种以上其他类书签导航站的部署，最后，祝各位大佬体验愉快！");
+            alert("1、初始界面点开右上角'≡'图标，展开四个选项，分别是：设置（⚙）、帮助文档（✌），排序工具（⇅）、退出按键（❌），再次点击'≡'图标，收回所有展开图标。 2、未登录状态时，点开设置图标按键，跳出用户名/密码输入框，输入正确后进入在线用户模式。使用设置按键即可轻松切换管理模式与用户模式，也就是通过点击设置（⚙）按键可以展开/隐藏功能键。3、管理模式下，可通过各个功能键来实现分组和书签的添加删除操作，支持导入导出书签列表至本地存储。4、20250216新增加两个功能：a、右键点击（PC端）或长按（手机端）书签可以修改书签名称和链接。b、长按三道杠'≡'图标或者点击设置按键（⚙）后跳出清空书签按键，点击后确认可实现清空所有书签列表。5、此书签管理系统，仅提供了最轻量级的部署支持，加之为了实现电脑端跟手机端屏幕自适应特性，不方便在管理模式下直接部署排序功能，为此增加了一个排序按键。排序按键使用站外工具面板（作者自建）方式实现自由排序功能，通过导入本地书签列表文件，解析还原分组和书签列表文件，轻松实现分组整体拖动排序，分组内书签拖动排序，书签还可以实现跨分组排序。排序完成后一键导出排序列表，书签管理系统通过调用排序工具，导入排序书签文件，解决自由排序问题。当然，你也可以不调用排序工具，通过右键点击修改功能实现排序。排序功能在电脑通过鼠标实现自由拖动，手机上使用不太方便。6、关于退出按键的部署，一是为了加设密码，增加私密性。二是为了实现一人多账号登录。通过输入不同的用户名/密码来使用不同的书签列表。输入用户名/密码登录到用户模式后，不点击退出（红色叉号），默认保存当前用户，下次打开，不用重新输入用户名/密码。7、此系统仅支持本终端本浏览器部署使用，不同终端，不同浏览器，使用同一套账户资料均可登录，但登录后都是空白内容，各书签列表内容可以自由部署，编辑整理完成后，及时导出书签列表文件至本地存储，此格式文件不论手机电脑，均支持导入。导入时自动检测是否存在同名分组，可自主选择分组导入。8、本系统纯粹为了个人使用方便部署，不建议推广，如需账号资料，联系作者，通过修改库文件增加账号。账号最好是单人使用最佳，禁止滥用，后台发现某个账号被超多终端使用，随时在后台行使超管权限，所以，且用且珍惜。9、欢迎提出宝贵意见，帮助作者升级优化，希望自定义样式的，联系作者为你单独部署，可以提供三种以上其他类书签导航站的部署，最后，祝各位大佬体验愉快！");
         }
 
         document.getElementById('free-sort').onclick = () => {
@@ -407,6 +428,7 @@
                     loadGroups();
                     document.getElementById('username-display').textContent = `在线用户: ${username}`;
                     document.getElementById('logoutButton').style.display = 'inline';
+                    document.getElementById('clearAllBookmarksButton').style.display = 'inline'; // Show clear button
                 } else {
                     alert("用户名或密码错误");
                 }
@@ -427,6 +449,7 @@
             groups = {};
             loadGroups();
             document.getElementById('logoutButton').style.display = 'none';
+            document.getElementById('clearAllBookmarksButton').style.display = 'none'; // Hide clear button
         }
 
         function toggleBookmarkInput(button) {
@@ -444,55 +467,103 @@
             }
         }
 
+        function addBookmark() {
+            const name = document.getElementById("bookmark-name").value;
+            const url = document.getElementById("bookmark-url").value;
+            const group = document.getElementById("group-select").value;
+
+            if (name && url && group) {
+                if (!groups[group]) {
+                    groups[group] = [];
+                }
+                groups[group].push({ name: name, url: url });
+                localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
+                loadGroups();
+                document.getElementById("bookmark-name").value = '';
+                document.getElementById("bookmark-url").value = '';
+                toggleBookmarkInput(document.querySelector("#admin-controls button:nth-child(1)"));
+            } else {
+                alert("请填写书签名称、链接和选择分组");
+            }
+        }
+
         function toggleDeleteBookmark(button) {
             const deleteBookmarkDiv = document.getElementById("delete-bookmark");
             deleteBookmarkDiv.style.display = deleteBookmarkDiv.style.display === "none" ? "block" : "none";
             button.classList.toggle('active-button');
-            updateDeleteBookmarkSelect();
+            const deleteBookmarkSelect = document.getElementById("delete-bookmark-select");
+            deleteBookmarkSelect.innerHTML = '';
+
+            for (const group in groups) {
+                for (let i = 0; i < groups[group].length; i++) {
+                    const bookmark = groups[group][i];
+                    const option = document.createElement("option");
+                    option.value = `${group}-${i}`;
+                    option.textContent = `${group} - ${bookmark.name}`;
+                    deleteBookmarkSelect.appendChild(option);
+                }
+            }
+        }
+
+        function deleteBookmark() {
+            const selectedValue = document.getElementById("delete-bookmark-select").value;
+            if (selectedValue) {
+                const [group, index] = selectedValue.split('-');
+                groups[group].splice(index, 1);
+                if (groups[group].length === 0) {
+                    delete groups[group];
+                }
+                localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
+                loadGroups();
+                toggleDeleteBookmark(document.querySelector("#admin-controls button:nth-child(3)"));
+            } else {
+                alert("请选择要删除的书签");
+            }
         }
 
         function toggleGroupInput(button) {
-            const groupInput = document.getElementById("group-input");
-            groupInput.style.display = groupInput.style.display === "none" ? "block" : "none";
+            const groupInputDiv = document.getElementById("group-input");
+            groupInputDiv.style.display = groupInputDiv.style.display === "none" ? "block" : "none";
             button.classList.toggle('active-button');
+        }
+
+        function addGroup() {
+            const groupName = document.getElementById("group-name").value;
+            if (groupName) {
+                groups[groupName] = [];
+                localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
+                loadGroups();
+                document.getElementById("group-name").value = '';
+                toggleGroupInput(document.querySelector("#admin-controls button:nth-child(5)"));
+            } else {
+                alert("请输入分组名称");
+            }
         }
 
         function toggleDeleteGroup(button) {
             const deleteGroupDiv = document.getElementById("delete-group");
             deleteGroupDiv.style.display = deleteGroupDiv.style.display === "none" ? "block" : "none";
             button.classList.toggle('active-button');
-            updateDeleteGroupSelect();
-        }
+            const deleteGroupSelect = document.getElementById("delete-group-select");
+            deleteGroupSelect.innerHTML = '';
 
-        function addGroup() {
-            const groupName = document.getElementById("group-name").value.trim();
-            if (groupName) {
-                groups[groupName] = [];
-                saveData();
-                loadGroups();
-                document.getElementById("group-name").value = '';
-                document.getElementById("group-input").style.display = 'none';
-                setTimeout(() => location.reload(), 100);
-            } else {
-                alert("请输入分组名称");
+            for (const group in groups) {
+                const option = document.createElement("option");
+                option.value = group;
+                option.textContent = group;
+                deleteGroupSelect.appendChild(option);
             }
         }
 
-        function addBookmark() {
-            const name = document.getElementById("bookmark-name").value.trim();
-            const url = document.getElementById("bookmark-url").value.trim();
-            const groupName = document.getElementById("group-select").value;
-
-            if (name && url && groupName) {
-                groups[groupName].push({ name, url });
-                saveData();
+        function deleteGroup() {
+            const selectedGroup = document.getElementById("delete-group-select").value;
+            if (selectedGroup) {
+                delete groups[selectedGroup];
+                localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
                 loadGroups();
-                document.getElementById("bookmark-name").value = '';
-                document.getElementById("bookmark-url").value = '';
-                document.getElementById("bookmark-input").style.display = 'none';
-                setTimeout(() => location.reload(), 100);
+                toggleDeleteGroup(document.querySelector("#admin-controls button:nth-child(7)"));
             } else {
-                alert("请填写书签名称、链接和选择分组");
+                alert("请选择要删除的分组");
             }
         }
 
@@ -500,187 +571,126 @@
             const groupsDiv = document.getElementById("groups");
             groupsDiv.innerHTML = '';
 
-            Object.keys(groups).forEach(group => {
+            for (const group in groups) {
                 const groupDiv = document.createElement("div");
-                groupDiv.className = 'group';
-                groupDiv.innerHTML = `<div class='group-title'>【${group}】</div>`;
+                groupDiv.className = "group";
+                const groupTitle = document.createElement("div");
+                groupTitle.className = "group-title";
+                groupTitle.textContent = group;
+                groupDiv.appendChild(groupTitle);
 
                 const bookmarkContainer = document.createElement("div");
-                bookmarkContainer.className = 'bookmark-container';
-                groups[group].forEach((bookmark) => {
-                    const card = document.createElement("div");
-                    card.className = 'bookmark-card';
-                    card.innerHTML = `<strong>${bookmark.name}</strong>`;
-                    card.onclick = function() {
-                        window.open(bookmark.url, '_blank');
-                    };
+                bookmarkContainer.className = "bookmark-container";
 
-                    // 添加右键点击（PC端）或长按（手机端）事件
-                    card.oncontextmenu = function(e) {
-                        e.preventDefault(); // 阻止默认右键菜单
-                        showEditModal(bookmark, group);
-                    };
-
-                    // 添加长按事件
-                    let longPressTimer = null;
-                    card.addEventListener('mousedown', () => {
-                        longPressTimer = setTimeout(() => {
-                            showEditModal(bookmark, group);
-                        }, 500); // 长按 500 毫秒触发
-                    });
-                    card.addEventListener('mouseup', () => {
-                        clearTimeout(longPressTimer);
-                    });
-                    card.addEventListener('mouseout', () => {
-                        clearTimeout(longPressTimer);
+                for (let i = 0; i < groups[group].length; i++) {
+                    const bookmark = groups[group][i];
+                    const bookmarkCard = document.createElement("div");
+                    bookmarkCard.className = "bookmark-card";
+                    bookmarkCard.textContent = bookmark.name;
+                    bookmarkCard.onclick = () => window.open(bookmark.url, '_blank');
+                    bookmarkCard.addEventListener('contextmenu', (event) => {
+                        event.preventDefault(); // 阻止默认的右键菜单
+                        editBookmarkData = { group: group, index: i, bookmark: bookmark };
+                        openEditModal(bookmark);
                     });
 
-                    bookmarkContainer.appendChild(card);
-                });
-
+                    bookmarkContainer.appendChild(bookmarkCard);
+                }
                 groupDiv.appendChild(bookmarkContainer);
                 groupsDiv.appendChild(groupDiv);
-            });
-
-            updateDeleteBookmarkSelect();
-        }
-
-        function updateDeleteBookmarkSelect() {
-            const select = document.getElementById("delete-bookmark-select");
-            select.innerHTML = '';
-
-            for (const group in groups) {
-                groups[group].forEach((bookmark) => {
-                    const option = document.createElement("option");
-                    option.value = bookmark.name;
-                    option.textContent = `【${group}】: ${bookmark.name}`;
-                    select.appendChild(option);
-                });
             }
         }
 
-        function deleteBookmark() {
-            const select = document.getElementById("delete-bookmark-select");
-            const bookmarkName = select.value;
+        function openEditModal(bookmark) {
+            const editModal = document.getElementById("editModal");
+            document.getElementById("edit-bookmark-name").value = bookmark.name;
+            document.getElementById("edit-bookmark-url").value = bookmark.url;
+            editModal.style.display = "block";
+        }
 
-            for (const group in groups) {
-                const index = groups[group].findIndex(b => b.name === bookmarkName);
+        function closeEditModal() {
+            const editModal = document.getElementById("editModal");
+            editModal.style.display = "none";
+        }
 
-                if (index !== -1) {
-                    groups[group].splice(index, 1);
-                    saveData();
-                    loadGroups();
-                    alert(`书签 "${bookmarkName}" 已删除`);
-                    setTimeout(() => location.reload(), 100);
-                    return;
-                }
+        function saveBookmarkEdit() {
+            if (editBookmarkData) {
+                const newName = document.getElementById("edit-bookmark-name").value;
+                const newUrl = document.getElementById("edit-bookmark-url").value;
+                groups[editBookmarkData.group][editBookmarkData.index].name = newName;
+                groups[editBookmarkData.group][editBookmarkData.index].url = newUrl;
+                localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
+                loadGroups();
+                closeEditModal();
+                editBookmarkData = null;
             }
-
-            alert("未找到该书签");
-        }
-
-        function updateDeleteGroupSelect() {
-            const select = document.getElementById("delete-group-select");
-            select.innerHTML = '';
-
-            for (const group in groups) {
-                const option = document.createElement("option");
-                option.value = group;
-                option.textContent = group;
-                select.appendChild(option);
-            }
-        }
-
-        function deleteGroup() {
-            const select = document.getElementById("delete-group-select");
-            const groupName = select.value;
-
-            if (groupName && groups[groupName]) {
-                if (confirm(`确定要删除分组 "${groupName}" 吗？`)) {
-                    delete groups[groupName];
-                    saveData();
-                    loadGroups();
-                    setTimeout(() => location.reload(), 100);
-                }
-            } else {
-                alert("未找到该分组");
-            }
-        }
-
-        function saveData() {
-            localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
-        }
-
-        function exportBookmarks() {
-            const dataStr = JSON.stringify(groups);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const username = currentUser;
-            const a = document.createElement('a');
-            a.href = url; 
-            a.download = `${username}_bookmarks.json`; 
-            a.click(); 
-            URL.revokeObjectURL(url);
         }
 
         function importBookmarks() {
-            const input = document.createElement('input');
-            input.type = 'file'; 
-            input.accept = '.json'; 
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
 
-            input.onchange = e => {
-                const file = e.target.files[0];
-                const reader = new FileReader();
-                reader.onload = event => {
-                    try {
-                        const importedGroups = JSON.parse(event.target.result);
-                        for (const group in importedGroups) {
-                            if (groups[group]) {
-                                if (confirm(`分组 "${group}" 已存在，是否合并?`)) {
-                                    groups[group] = groups[group].concat(importedGroups[group]);
+            fileInput.onchange = event => {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        try {
+                            const importedGroups = JSON.parse(e.target.result);
+                            for (const group in importedGroups) {
+                                if (groups[group]) {
+                                    if (confirm(`同名分组 "${group}" 已存在，是否合并？选择取消将跳过此分组。`)) {
+                                        groups[group] = groups[group].concat(importedGroups[group]);
+                                    }
+                                } else {
+                                    groups[group] = importedGroups[group];
                                 }
-                            } else {
-                                groups[group] = importedGroups[group];
                             }
+                            localStorage.setItem(`groups_${currentUser}`, JSON.stringify(groups));
+                            loadGroups();
+                            alert('书签导入成功！');
+                        } catch (error) {
+                            alert('导入失败：文件格式不正确。');
                         }
-                        saveData();
-                        loadGroups();
-                    } catch (error) {
-                        alert("导入失败，文件格式不正确!");
-                    }
-                };
-                reader.readAsText(file);
+                    };
+                    reader.readAsText(file);
+                }
             };
-            input.click();
+            fileInput.click();
         }
 
-        // 显示书签编辑模态框
-        function showEditModal(bookmark, group) {
-            editBookmarkData = { bookmark, group };
-            const modal = document.getElementById('editModal');
-            document.getElementById('edit-bookmark-name').value = bookmark.name;
-            document.getElementById('edit-bookmark-url').value = bookmark.url;
-            modal.style.display = 'block';
+        function exportBookmarks() {
+            const dataStr = JSON.stringify(groups, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+            const exportFileName = 'bookmarks.json';
+
+            const linkElement = document.createElement('a');
+            linkElement.setAttribute('href', dataUri);
+            linkElement.setAttribute('download', exportFileName);
+            document.body.appendChild(linkElement);
+            linkElement.click();
+            document.body.removeChild(linkElement);
         }
 
-        // 保存书签编辑
-        function saveBookmarkEdit() {
-            const modal = document.getElementById('editModal');
-            const newName = document.getElementById('edit-bookmark-name').value.trim();
-            const newUrl = document.getElementById('edit-bookmark-url').value.trim();
+        function clearAllBookmarks() {
+            localStorage.removeItem(`groups_${currentUser}`);
+            groups = {};
+            loadGroups();
+        }
 
-            if (newName && newUrl) {
-                const { bookmark, group } = editBookmarkData;
-                bookmark.name = newName;
-                bookmark.url = newUrl;
-                saveData();
-                loadGroups();
-                modal.style.display = 'none';
-                alert('书签已更新！');
-            } else {
-                alert('请填写完整的书签名称和链接');
+        function confirmClearAllBookmarks() {
+            if (confirm("确认要删除所有书签吗？此操作不可撤销！")) {
+                clearAllBookmarks();
             }
         }
-    </script>   
-</body>   
+        
+        function confirmClearAllBookmarksViaHelper() {
+            if (currentUser && confirm("确定要删除所有书签吗？此操作不可撤销！")) {
+                clearAllBookmarks();
+            }
+        }
+
+    </script>
+</body>
 </html>
