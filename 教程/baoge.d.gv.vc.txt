@@ -1,0 +1,18 @@
+
+
+登録ドメイン名：               baoge.d.gv.vc
+DDNS-Update-Key：       ORSVAND0B6S0G5RY37ZUS8X89Y
+
+ホスト登録用URL：   http://set.d.gv.vc/update.php?uid=ORSVAND0B6S0G5RY37ZUS8X89Y
+
+
+認証を行う：             http://www.d.gv.vc/?page=resist-accept&uid=ORSVAND0B6S0G5RY37ZUS8X89Y
+
+
+
+
+クエリを使用しないホスト登録：    http://ORSVAND0B6S0G5RY37ZUS8X89Y.set.d.gv.vc
+
+IPv6アドレスの登録：                       http://v6set.d.gv.vc/update.php?uid=ORSVAND0B6S0G5RY37ZUS8X89Y
+
+
