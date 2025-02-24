@@ -713,6 +713,18 @@
                 adminControls.style.display = adminControls.style.display === 'none' ? 'flex' : 'none'; // Changed to flex
             }
         }
+function logout() {
+            currentUser = null;
+            localStorage.removeItem('lastUser');
+            document.getElementById('admin-controls').style.display = 'none';
+            document.getElementById('username-display').textContent = "书签管理系统";
+            groups = {};
+            loadGroups();
+            document.getElementById('logoutButton').style.display = 'none';
+            document.getElementById('clearAllBookmarksButton').style.display = 'none'; // Hide clear button
+        }
+
+
 
         function toggleBookmarkInput(button) {
             const bookmarkInput = document.getElementById('bookmark-input');
