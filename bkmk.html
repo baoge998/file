@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,6 +17,7 @@
             height: 100vh;
             background-color: #FFFACD;
         }
+
         #bookmark-manager {
             width: 95%;
             max-width: 600px;
@@ -29,13 +31,17 @@
             flex-grow: 0;
             max-height: 80vh;
         }
-        input[type="text"], input[type="password"], select {
+
+        input[type="text"],
+        input[type="password"],
+        select {
             width: calc(100% - 22px);
             padding: 10px;
             margin: 5px 0;
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+
         button {
             padding: 5px;
             cursor: pointer;
@@ -51,6 +57,7 @@
             white-space: nowrap;
             text-align: center;
         }
+
         .header-buttons {
             position: absolute;
             top: 20px;
@@ -58,6 +65,7 @@
             display: flex;
             gap: 10px;
         }
+
         .header-buttons button {
             border-radius: 50%;
             width: 40px;
@@ -65,6 +73,7 @@
             padding: 0;
             font-size: 1.5em;
         }
+
         .controls {
             display: flex;
             flex-direction: row;
@@ -72,26 +81,30 @@
             flex-wrap: wrap;
             margin-bottom: 20px;
         }
+
         .bookmark-container {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             margin-top: 10px;
         }
+
         .bookmark-card {
             border-radius: 5px;
             padding: 8px;
             margin: 5px;
             width: calc(45% - 10px);
-            box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
             text-align: center;
             background-color: #FFFACD;
             font-size: 1.1em;
             cursor: pointer;
         }
+
         .bookmark-card:hover {
             background-color: #7D26CD;
         }
+
         .group {
             margin-top: 20px;
             text-align: left;
@@ -100,6 +113,7 @@
             padding: 10px;
             margin-bottom: 10px;
         }
+
         .group-title {
             font-weight: bold;
             color: #FFD700;
@@ -108,26 +122,32 @@
             align-items: center;
             cursor: pointer;
         }
+
         .scrollable {
             max-height: 60vh;
             overflow-y: auto;
         }
+
         .quote-display {
             font-size: 1.2em;
             margin-bottom: 15px;
             color: #FFFACD;
         }
+
         .date-time {
             color: #FFFACD;
         }
+
         #username-display {
             margin-bottom: 20px;
             color: #FFFACD;
         }
+
         .active-button {
             background-color: #FFA500;
             color: white;
         }
+
         .edit-bookmark-modal {
             display: none;
             position: fixed;
@@ -140,6 +160,7 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             z-index: 1000;
         }
+
         .edit-bookmark-modal input {
             width: 100%;
             padding: 10px;
@@ -147,6 +168,7 @@
             border: 1px solid #ccc;
             border-radius: 5px;
         }
+
         .edit-bookmark-modal button {
             width: 100%;
             padding: 10px;
@@ -157,11 +179,13 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         .edit-bookmark-modal button:hover {
             background-color: #005b4f;
         }
     </style>
 </head>
+
 <body>
     <div id="bookmark-manager">
         <div class="header-buttons">
@@ -214,6 +238,8 @@
         <input type="text" id="edit-bookmark-name" placeholder="书签名称">
         <input type="text" id="edit-bookmark-url" placeholder="书签链接">
         <button onclick="saveBookmarkEdit()">保存</button>
+        <button onclick="closeEditModal()">取消</button>
+        <!-- Cancel button -->
     </div>
 
     <script>
@@ -223,7 +249,7 @@
             "gui": "gui",
         };
         let currentUser = localStorage.getItem('lastUser') || null;
-        let groups = {}; // Define groups in the global scope
+        let groups = {};
         let quotes = [
             "生活中只有一种英雄主义，那就是在认清生活真相之后依然热爱生活。 — 罗曼·罗兰",
             "成功的秘诀在于坚持自己的目标和信念。 — 乔治·华盛顿",
@@ -348,6 +374,9 @@
         let currentQuoteIndex = parseInt(localStorage.getItem('currentQuoteIndex')) || 0;
         let editBookmarkData = null; // 存储当前编辑的书签数据
         let longPressTimer;
+        let bookmarkLongPressTimer; // Timer for bookmark long press
+        let currentBookmarkGroupName; // Store the current bookmark's group
+        let currentBookmarkIndex; // Store the current bookmark's index
 
         // Function to save groups to localStorage
         function saveGroups() {
@@ -378,11 +407,28 @@
                     const bookmarkContainer = document.createElement('div');
                     bookmarkContainer.classList.add('bookmark-container');
 
-                    groups[groupName].forEach(bookmark => {
+                    groups[groupName].forEach((bookmark, index) => {
                         const bookmarkCard = document.createElement('div');
                         bookmarkCard.classList.add('bookmark-card');
                         bookmarkCard.textContent = bookmark.name;
-                        bookmarkCard.onclick = () => window.open(bookmark.url, '_blank');
+
+                        // Add event listeners for editing
+                        bookmarkCard.addEventListener('mousedown', (event) => {
+                            if (event.button === 2) { // Right click
+                                event.preventDefault();
+                                showEditModal(groupName, index, bookmark);
+                            } else { // Left click
+                                // Handle long press for touch devices
+                                startBookmarkLongPress(groupName, index, bookmark, event);
+                            }
+                        });
+
+                        bookmarkCard.addEventListener('mouseup', cancelBookmarkLongPress);
+                        bookmarkCard.addEventListener('mouseleave', cancelBookmarkLongPress);
+                        bookmarkCard.addEventListener('touchstart', (event) => startBookmarkLongPress(groupName, index, bookmark, event));
+                        bookmarkCard.addEventListener('touchend', cancelBookmarkLongPress);
+                        bookmarkCard.onclick = () => window.open(bookmark.url, '_blank'); // Existing onclick
+
                         bookmarkContainer.appendChild(bookmarkCard);
                     });
 
@@ -395,6 +441,11 @@
             populateDeleteBookmarkSelect();
             updateGroupSelectOptions();
             updateDeleteBookmarkOptions();
+
+            // Add right-click context menu blocking
+            document.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+            }, false);
         }
 
         function populateGroupSelect() {
@@ -472,7 +523,7 @@
 
                             if (Array.isArray(bookmarks)) {
                                 // 处理没有分组的书签
-                                let defaultGroupName = '未分组';  // 默认分组名称
+                                let defaultGroupName = '未分组'; // 默认分组名称
 
                                 if (!groups[defaultGroupName]) {
                                     groups[defaultGroupName] = [];
@@ -521,6 +572,58 @@
             };
             fileInput.click();
         }
+        
+        // Function to start long press for bookmark editing
+        function startBookmarkLongPress(groupName, index, bookmark, event) {
+            bookmarkLongPressTimer = setTimeout(() => {
+                showEditModal(groupName, index, bookmark);
+            }, 500); // 0.5 seconds
+        }
+
+        // Function to cancel long press
+        function cancelBookmarkLongPress() {
+            clearTimeout(bookmarkLongPressTimer);
+        }
+
+        // Function to show the edit modal
+        function showEditModal(groupName, index, bookmark) {
+            document.getElementById('edit-bookmark-name').value = bookmark.name;
+            document.getElementById('edit-bookmark-url').value = bookmark.url;
+            document.getElementById('editModal').style.display = 'block';
+
+            // Store the current bookmark data
+            editBookmarkData = {
+                groupName: groupName,
+                index: index,
+                bookmark: bookmark
+            };
+        }
+
+        // Function to close the edit modal
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+            editBookmarkData = null; // Clear stored data
+        }
+
+        // Function to save the bookmark edit
+        function saveBookmarkEdit() {
+            if (editBookmarkData) {
+                const newName = document.getElementById('edit-bookmark-name').value;
+                const newUrl = document.getElementById('edit-bookmark-url').value;
+
+                // Update the bookmark data
+                groups[editBookmarkData.groupName][editBookmarkData.index].name = newName;
+                groups[editBookmarkData.groupName][editBookmarkData.index].url = newUrl;
+
+                saveGroups();
+                loadGroups();
+
+                closeEditModal();
+                alert('书签已更新!');
+            } else {
+                alert('没有书签数据可以更新。');
+            }
+        }
 
         window.onload = function () {
             document.getElementById('bookmark-manager').style.display = 'block';
@@ -562,7 +665,7 @@
         }
 
         function showHelp() {
-            alert("1、初始界面点开右上角'≡'图标，展开四个选项，分别是：设置（⚙）、帮助文档（✌），排序工具（⇅）、退出按键（❌），再次点击'≡'图标，收回所有展开图标。 2、未登录状态时，点开设置图标按键，跳出用户名/密码输入框，输入正确后进入在线用户模式。使用设置按键即可轻松切换管理模式与用户模式，也就是通过点击设置（⚙）按键可以展开/隐藏功能键。3、管理模式下，可通过各个功能键来实现分组和书签的添加删除操作，支持导入导出书签列表至本地存储。4、20250216新增加两个功能：a、右键点击（PC端）或长按（手机端）书签可以修改书签名称和链接。b、长按三道杠'≡'图标或者点击设置按键（⚙）后跳出清空书签按键，点击后确认可实现清空所有书签列表。5、此书签管理系统，仅提供了最轻量级的部署支持，加之为了实现电脑端跟手机端屏幕自适应特性，不方便在管理模式下直接部署排序功能，为此增加了一个排序按键。排序按键使用站外工具面板（作者自建）方式实现自由排序功能，通过导入本地书签列表文件，解析还原分组和书签列表文件，轻松实现分组整体拖动排序，分组内书签拖动排序，书签还可以实现跨分组排序。排序完成后一键导出排序列表，书签管理系统通过调用排序工具，导入排序书签文件，解决自由排序问题。当然，你也可以不调用排序工具，通过右键点击修改功能实现排序。排序功能在电脑通过鼠标实现自由拖动，手机上使用不太方便。6、关于退出按键的部署，一是为了加设密码，增加私密性。二是为了实现一人多账号登录。通过输入不同的用户名/密码来使用不同的书签列表。输入用户名/密码登录到用户模式后，不点击退出（红色叉号），默认保存当前用户，下次打开，不用重新输入用户名/密码。7、此系统仅支持本终端本浏览器部署使用，不同终端，不同浏览器，使用同一套账户资料均可登录，但登录后都是空白内容，各书签列表内容可以自由部署，编辑整理完成后，及时导出书签列表文件至本地存储，此格式文件不论手机电脑，均支持导入。导入时自动检测是否存在同名分组，可自主选择分组导入。8、本系统纯粹为了个人使用方便部署，不建议推广，如需账号资料，联系作者，通过修改库文件增加账号。账号最好是单人使用最佳，禁止滥用，后台发现某个账号被超多终端使用，随时在后台行使超管权限，所以，且用且珍惜。9、欢迎提出宝贵意见，帮助作者升级优化，希望自定义样式的，联系作者为你单独部署，可以提供三种以上其他类书签导航站的部署，最后，祝各位大佬体验愉快！");
+            alert("1、初始界面点开右上角'≡'图标，展开四个选项，分别是：设置（⚙）、帮助文档（✌），排序工具（⇅）、退出按键（❌），再次点击'≡'图标，收回所有展开图标。 2、未登录状态时，点开设置图标按键，跳出用户名/密码输入框，输入正确后进入在线用户模式。使用设置按键即可轻松切换管理模式与用户模式，也就是通过点击设置（⚙）按键可以展开/隐藏功能键。3、管理模式下，可通过各个功能键来实现分组和书签的添加删除操作，支持导入导出书签列表至本地存储。4、20250216新增加两个功能：a、右键点击（PC端）或长按（手机端）书签可以修改书签名称和链接。b、长按三道杠'≡'图标或者点击设置按键（⚙）后跳出清空书签按键，点击后确认可实现清空所有书签列表。5、此书签管理系统，仅提供了最轻量级的部署支持，加之为了实现电脑端跟手机端屏幕自适应特性，不方便在管理模式下 directly deploy排序功能，为此增加了一个排序按键。排序按键使用站外工具面板（作者自建）方式实现自由排序功能，通过导入本地书签列表文件，解析还原分组和书签列表文件，轻松实现分组整体拖动排序，分组内书签拖动排序，书签还可以实现跨分组排序。排序完成后一键导出排序列表，书签管理系统通过调用排序工具，导入排序书签文件，解决自由排序问题。当然，你也可以不调用排序工具，通过右键点击修改功能实现排序。排序功能在电脑通过鼠标实现自由拖动，手机上使用不太方便。6、关于退出按键的部署，一是为了加设密码，增加私密性。二是为了实现一人多账号登录。通过输入不同的用户名/密码来使用不同的书签列表。输入用户名/密码登录到用户模式后，不点击退出（红色叉号），默认保存当前用户，下次打开，不用重新输入用户名/密码。7、此系统仅支持本终端本浏览器部署使用，不同终端，不同浏览器，使用同一套账户资料均可登录，但登录后都是空白内容，各书签列表内容可以自由部署，编辑整理完成后，及时导出书签列表文件至本地存储，此格式文件不论手机电脑，均支持导入。导入时自动检测是否存在同名分组，可自主选择分组导入。8、本系统纯粹为了个人使用方便部署，不建议推广，如需账号资料，联系作者，通过修改库文件增加账号。账号最好是单人使用最佳，禁止滥用，后台发现某个账号被超多终端使用，随时在后台行使超管权限，所以，且用且珍惜。9、欢迎提出宝贵意见，帮助作者升级优化，希望自定义样式的，联系作者为你单独部署，可以提供三种以上其他类书签导航站的部署，最后，祝各位大佬体验愉快！");
         }
 
         document.getElementById('free-sort').onclick = () => {
@@ -599,7 +702,7 @@
                     localStorage.setItem('lastUser', username);
                     groups = JSON.parse(localStorage.getItem(`groups_${currentUser}`)) || {};
                     loadGroups();
-                    document.getElementById('username-display').textContent = `在线用户: ${username}`;
+                    document.getElementById('username-display').textContent = `在线用户: ${currentUser}`;
                     document.getElementById('logoutButton').style.display = 'inline';
                     document.getElementById('clearAllBookmarksButton').style.display = 'inline'; // Show clear button
                 } else {
@@ -645,7 +748,10 @@
                 if (!groups[groupName]) {
                     groups[groupName] = [];
                 }
-                groups[groupName].push({ name: bookmarkName, url: bookmarkUrl });
+                groups[groupName].push({
+                    name: bookmarkName,
+                    url: bookmarkUrl
+                });
                 saveGroups();
                 loadGroups();
                 document.getElementById('bookmark-name').value = '';
@@ -741,6 +847,4 @@
     </script>
 </body>
 </html>
-
-
 
