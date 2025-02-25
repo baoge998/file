@@ -34,6 +34,7 @@
             cursor: move;
             background-color: #fff;
             transition: background-color 0.2s;
+            touch-action: none; /* Prevent default touch actions */
         }
 
         .bookmark:hover {
@@ -75,9 +76,9 @@
         document.getElementById('fileInput').addEventListener('change', handleFileSelect);
         document.getElementById('exportButton').addEventListener('click', exportBookmarks);
 
-        let autoScrollSpeed = 0;
-        let autoScrollInterval;
-        let dragStartY = 0;
+        let draggingElement = null;
+        let dragOffsetY = 0;
+        let isTouchDevice = 'ontouchstart' in window; // Detect if the device supports touch
 
         function handleFileSelect(event) {
             const file = event.target.files[0];
@@ -91,7 +92,7 @@
             }
         }
 
-       function importBookmarks(jsonContent) {
+        function importBookmarks(jsonContent) {
             try {
                 const bookmarksData = JSON.parse(jsonContent);
                 const container = document.getElementById('bookmarksContainer');
@@ -121,78 +122,103 @@
             const bookmarkDiv = document.createElement('div');
             bookmarkDiv.className = 'bookmark';
             bookmarkDiv.innerText = bookmark.name + ' - ' + bookmark.url;
-            bookmarkDiv.setAttribute('draggable', true);
-            bookmarkDiv.addEventListener('dragstart', dragBookmark);
-            bookmarkDiv.addEventListener('dragover', allowDrop);
-            bookmarkDiv.addEventListener('drop', dropBookmark);
+            bookmarkDiv.setAttribute('draggable', 'true');
+
+            // Add event listeners based on device type
+            if (isTouchDevice) {
+                bookmarkDiv.addEventListener('touchstart', touchStart);
+                bookmarkDiv.addEventListener('touchmove', touchMove);
+                bookmarkDiv.addEventListener('touchend', touchEnd);
+            } else {
+                bookmarkDiv.addEventListener('dragstart', dragStart);
+                bookmarkDiv.addEventListener('dragover', allowDrop);
+                bookmarkDiv.addEventListener('drop', drop);
+            }
+
             container.appendChild(bookmarkDiv);
+        }
+
+        // Desktop drag-and-drop event handlers
+        function dragStart(event) {
+            draggingElement = event.target;
+            event.dataTransfer.setData('text/plain', null);
+            draggingElement.classList.add('dragging');
         }
 
         function allowDrop(event) {
             event.preventDefault();
             if (event.target.classList.contains('bookmark')) {
-                // Remove existing drop target highlighting
                 clearDropTargets();
-                // Highlight the target bookmark
                 event.target.classList.add('drop-target');
             }
         }
 
-        function startAutoScroll() {
-            const container = document.getElementById('bookmarksContainer');
-            autoScrollInterval = setInterval(() => {
-                container.scrollTop += autoScrollSpeed;
-            }, 10);
-        }
-
-        function stopAutoScroll() {
-            clearInterval(autoScrollInterval);
-            autoScrollSpeed = 0;
-        }
-
-        function dragBookmark(event) {
-            event.dataTransfer.setData("text", event.target.innerHTML);
-            event.dataTransfer.setData("index", Array.from(event.target.parentNode.children).indexOf(event.target));
-            event.dataTransfer.setData("isGroup", "false");
-
-            document.addEventListener('dragover', handleDragOver);
-            document.addEventListener('dragend', handleDragEnd);
-
-            startAutoScroll();
-             // Add class to indicate dragging
-            event.target.classList.add('dragging');
-        }
-
-        function dropBookmark(event) {
+        function drop(event) {
             event.preventDefault();
-            stopAutoScroll();
-            document.querySelectorAll('.bookmark, .group').forEach(el => el.classList.remove('dragging'));
-            clearDropTargets();
-
-            const target = event.target;
-            const data = event.dataTransfer.getData("text");
-            const index = event.dataTransfer.getData("index");
-           // Add this line to get the bookmarksContainer within the function scope:
-           const bookmarksContainer = document.getElementById('bookmarksContainer');
-
-            if (target.classList.contains('bookmark')) {
-                const originalBookmark = bookmarksContainer.children[index];
-                if (originalBookmark) {
-                    originalBookmark.remove();
-                }
-
-                const newBookmark = document.createElement('div');
-                newBookmark.className = 'bookmark';
-                newBookmark.innerHTML = data;
-                newBookmark.setAttribute('draggable', true);
-                newBookmark.addEventListener('dragstart', dragBookmark);
-                newBookmark.addEventListener('dragover', allowDrop);
-                newBookmark.addEventListener('drop', dropBookmark);
-                bookmarksContainer.insertBefore(newBookmark, target.nextSibling);
+            const dropTarget = event.target;
+            if (dropTarget.classList.contains('bookmark') && draggingElement) {
+                const container = document.getElementById('bookmarksContainer');
+                container.insertBefore(draggingElement, dropTarget.nextSibling);
+                draggingElement.classList.remove('dragging');
+                clearDropTargets();
             }
-             // Call clearDropTargets after the bookmark has been dropped
-             clearDropTargets();
+        }
 
+        // Touch device event handlers
+        function touchStart(event) {
+            event.preventDefault();
+            draggingElement = event.target;
+            draggingElement.classList.add('dragging');
+            dragOffsetY = event.touches[0].clientY - draggingElement.offsetTop;
+        }
+
+        function touchMove(event) {
+            event.preventDefault();
+            if (!draggingElement) return;
+
+            const container = document.getElementById('bookmarksContainer');
+            const newY = event.touches[0].clientY - dragOffsetY;
+            draggingElement.style.top = newY + 'px';
+            draggingElement.style.position = 'absolute';
+
+            // Find the closest drop target
+            const bookmarks = Array.from(container.children);
+            let closest = null;
+            let closestDistance = Infinity;
+
+            bookmarks.forEach(bookmark => {
+                if (bookmark === draggingElement) return;
+                const rect = bookmark.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                const distance = Math.abs(newY - centerY);
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closest = bookmark;
+                }
+            });
+
+            if (closest) {
+                clearDropTargets();
+                closest.classList.add('drop-target');
+            }
+        }
+
+        function touchEnd(event) {
+            event.preventDefault();
+            if (!draggingElement) return;
+
+            const container = document.getElementById('bookmarksContainer');
+            const dropTarget = document.querySelector('.drop-target');
+
+            if (dropTarget) {
+                container.insertBefore(draggingElement, dropTarget.nextSibling);
+            }
+
+            draggingElement.classList.remove('dragging');
+            draggingElement.style.top = '';
+            draggingElement.style.position = '';
+            draggingElement = null;
+            clearDropTargets();
         }
 
         function clearDropTargets() {
@@ -209,7 +235,7 @@
             Array.from(container.children).forEach(child => {
                 if (child.classList.contains('bookmark')) {
                     const [name, url] = child.innerText.split(' - ');
-                    bookmarks.push({name: name, url: url});
+                    bookmarks.push({ name: name, url: url });
                 }
             });
 
@@ -218,38 +244,6 @@
             link.href = URL.createObjectURL(blob);
             link.download = 'bookmarks.json';
             link.click();
-        }
-
-        function handleDragOver(event) {
-            event.preventDefault();
-
-            const container = document.getElementById('bookmarksContainer');
-            const containerRect = container.getBoundingClientRect();
-            const mouseY = event.clientY;
-            const sensitivity = 20; // Adjust sensitivity as needed
-            const maxSpeed = 10; // Adjust max speed as needed
-
-            // Calculate distances from top and bottom scroll zones
-            const distanceTop = mouseY - containerRect.top;
-            const bottomScrollZoneTop = containerRect.bottom - 50;  // 50px from the bottom
-            const distanceBottom = bottomScrollZoneTop - mouseY ;
-
-            if (distanceTop < sensitivity) {
-                autoScrollSpeed = -maxSpeed * (sensitivity - distanceTop) / sensitivity;
-            } else if (distanceBottom < sensitivity) {
-                autoScrollSpeed = maxSpeed * (sensitivity - distanceBottom) / sensitivity;
-            } else {
-                autoScrollSpeed = 0;
-            }
-
-            container.scrollTop += autoScrollSpeed;
-        }
-
-        function handleDragEnd(event) {
-            document.removeEventListener('dragover', handleDragOver);
-            document.removeEventListener('dragend', handleDragEnd);
-             document.querySelectorAll('.bookmark, .group').forEach(el => el.classList.remove('dragging'));
-            stopAutoScroll();
         }
     </script>
 </body>
