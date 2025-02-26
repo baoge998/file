@@ -160,7 +160,6 @@
         #exportButton:hover {
             background-color: #007B9A;
         }
-
         #historyButton {
             background-color: #f44336;
         }
@@ -326,11 +325,15 @@
             event.preventDefault();
             draggingElement = event.target;
             draggingElement.classList.add('dragging');
-            dragOffsetY = event.touches[0].clientY - draggingElement.offsetTop;
+
+            // Calculate dragOffsetY relative to the *container*
+            const containerRect = document.getElementById('bookmarksContainer').getBoundingClientRect();
+            dragOffsetY = event.touches[0].clientY - draggingElement.getBoundingClientRect().top + containerRect.top;
+
             clearDropTargets(); // Clear any existing drop targets
 
-            const containerRect = document.getElementById('bookmarksContainer').getBoundingClientRect();
-            draggingElement.style.width = containerRect.width + 'px';
+            const containerRect2 = document.getElementById('bookmarksContainer').getBoundingClientRect();
+            draggingElement.style.width = containerRect2.width + 'px';
         }
 
         function touchMove(event) {
@@ -339,12 +342,17 @@
 
             const container = document.getElementById('bookmarksContainer');
             const touch = event.touches[0];
-            const newY = touch.clientY - dragOffsetY;
+
+            // Get the container's bounding rectangle
+            const containerRect = container.getBoundingClientRect();
+
+            // Calculate the new Y position relative to the *container*
+            const newY = touch.clientY - containerRect.top - dragOffsetY;  // Subtract container's top offset
 
             // Update the dragged element's position
             draggingElement.style.top = newY + 'px';
             draggingElement.style.position = 'absolute';
-            draggingElement.style.left = container.offsetLeft + 'px';
+            draggingElement.style.left = containerRect.left + 'px'; // Use containerRect.left
 
             // Find the closest drop target and add the purple line
             const bookmarks = Array.from(container.children);
@@ -354,7 +362,7 @@
             bookmarks.forEach(bookmark => {
                 if (bookmark === draggingElement) return;
                 const rect = bookmark.getBoundingClientRect();
-                const centerY = rect.top + rect.height / 2;
+                const centerY = rect.top + rect.height / 2 - containerRect.top; // Account for container scroll
                 const distance = Math.abs(newY - centerY);
 
                 if (distance < closestDistance) {
@@ -452,24 +460,19 @@
             }
         }
 
-        function deleteHistoryFile(fileKey) {
-            if (localStorage.getItem(fileKey)) {
-                localStorage.removeItem(fileKey);
-                historyFiles = historyFiles.filter(file => file.key !== fileKey);
-                updateHistoryFileList();
+        function loadHistoryFile(key) {
+            const fileContent = localStorage.getItem(key);
+            if (fileContent) {
+                importBookmarks(fileContent);
             }
         }
 
-        function loadHistoryFile(fileKey) {
-            const content = localStorage.getItem(fileKey);
-            if (content) {
-                historyFileName = fileKey.replace(historyFilesPrefix, '').split('-').slice(0, -1).join('-'); // Extract filename without timestamp
-                originalFileName = null; // Reset original file name
-                importBookmarks(content);
-            }
+        function deleteHistoryFile(key) {
+            localStorage.removeItem(key);
+            historyFiles = historyFiles.filter(file => file.key !== key);
+            updateHistoryFileList();
         }
 
-        // Get local timestamp in YYYYMMDDHHmm format
         function getLocalTimestamp() {
             const now = new Date();
             const year = now.getFullYear();
@@ -477,8 +480,8 @@
             const day = String(now.getDate()).padStart(2, '0');
             const hour = String(now.getHours()).padStart(2, '0');
             const minute = String(now.getMinutes()).padStart(2, '0');
-
-            return `${year}${month}${day}${hour}${minute}`;
+            const second = String(now.getSeconds()).padStart(2, '0');
+            return `${year}-${month}-${day}-${hour}${minute}${second}`;
         }
     </script>
 </body>
