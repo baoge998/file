@@ -350,28 +350,6 @@
             draggingElement.style.position = 'absolute';
             draggingElement.style.left = container.offsetLeft + 'px';
 
-            // Autoscroll logic
-            const containerRect = container.getBoundingClientRect();
-            let scrollDirection = 0;
-
-            if (newY - containerRect.top < scrollThreshold) {
-                scrollDirection = 1; // Scroll up
-            } else if (containerRect.bottom - (newY + draggingElement.offsetHeight) < scrollThreshold) {
-                scrollDirection = 2; // Scroll down
-            }
-
-            clearInterval(autoScrollInterval);
-
-            if (scrollDirection !== 0) {
-                autoScrollInterval = setInterval(() => {
-                    if (scrollDirection === 1) {
-                        container.scrollTop -= scrollSpeed;
-                    } else if (scrollDirection === 2) {
-                        container.scrollTop += scrollSpeed;
-                    }
-                }, 20);
-            }
-
             // Find the closest drop target and add the purple line
             const bookmarks = Array.from(container.children);
             let closest = null;
@@ -413,8 +391,6 @@
             draggingElement.style.left = '';
             draggingElement = null;
             clearDropTargets();
-
-            clearInterval(autoScrollInterval);
         }
 
         function clearDropTargets() {
