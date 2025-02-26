@@ -63,6 +63,7 @@
 
         #message { color: green; }
         .error { color: red; }
+
         #controls {
             position: sticky;
             top: 0;
@@ -72,6 +73,34 @@
             display: flex;
             gap: 10px;
             align-items: center;
+        }
+
+        #fileInput {
+            display: none; /* Hide the file input */
+        }
+
+        #fileInputLabel {
+            display: inline-block;
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        #fileInputLabel:hover {
+            background-color: #45a049; /* Darker green on hover */
+            transform: scale(1.05); /* Slight scale effect on hover */
+        }
+
+        #fileInputLabel:active {
+            transform: scale(0.95); /* Slight scale effect on click */
         }
 
         #historyFileList {
@@ -95,12 +124,54 @@
 
         .file-item span { flex-grow: 1; }
         .file-item button { margin-left: 10px; cursor: pointer; }
+
+        /* Button styling */
+        button {
+            background-color: #4CAF50; /* Green */
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        button:hover {
+            background-color: #45a049; /* Darker green on hover */
+            transform: scale(1.05); /* Slight scale effect on hover */
+        }
+
+        button:active {
+            transform: scale(0.95); /* Slight scale effect on click */
+        }
+
+        #exportButton {
+            background-color: #008CBA; /* Blue */
+        }
+
+        #exportButton:hover {
+            background-color: #007B9A; /* Darker blue on hover */
+        }
+
+        #historyButton {
+            background-color: #f44336; /* Red */
+        }
+
+        #historyButton:hover {
+            background-color: #d32f2f; /* Darker red on hover */
+        }
     </style>
 </head>
 <body>
     <div id="panel">
         <h1>单书签自由排序</h1>
         <div id="controls">
+            <!-- Replace input with a label for better user experience -->
+            <label for="fileInput" id="fileInputLabel">选择文件</label>
             <input type="file" id="fileInput" accept=".json">
             <button id="exportButton">导出</button>
             <button id="historyButton">历史文件</button>
@@ -119,6 +190,8 @@
         let dragOffsetY = 0;
         let isTouchDevice = 'ontouchstart' in window; // Detect if the device supports touch
         const historyFilesPrefix = 'bookmarkHistory_'; // Prefix for storing history files in localStorage
+        let originalFileName = null; // Store the original file name from file input
+        let historyFileName = null; // Store the original file name from history file
 
         // Load history files from localStorage
         let historyFiles = Object.keys(localStorage)
@@ -128,15 +201,12 @@
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
+                originalFileName = file.name.substring(0, file.name.lastIndexOf('.')); // Extract file name without extension
+                historyFileName = null; // Reset history file name
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const content = e.target.result;
                     importBookmarks(content);
-                    const localTimestamp = getLocalTimestamp(); // Get local timestamp in YYYYMMDDHHmm format
-                    const uniqueKey = `${historyFilesPrefix}${file.name}-${localTimestamp}`; // Generate a unique key
-                    localStorage.setItem(uniqueKey, content); // Save file content to localStorage
-                    historyFiles.push({ key: uniqueKey, name: `${file.name}-${localTimestamp}` }); // Add to history
-                    updateHistoryFileList();
                 };
                 reader.readAsText(file);
             }
@@ -193,6 +263,10 @@
             draggingElement = event.target;
             event.dataTransfer.setData('text/plain', null);
             draggingElement.classList.add('dragging');
+        }
+
+        function dragOver(event) {
+            event.preventDefault();
         }
 
         function allowDrop(event) {
@@ -302,10 +376,27 @@
             });
 
             const blob = new Blob([JSON.stringify(bookmarks, null, 2)], { type: 'application/json' });
+            const timestamp = getLocalTimestamp();
+            let filename;
+            if (historyFileName) {
+                filename = `${historyFileName}-${timestamp}.json`;
+            } else if (originalFileName) {
+                filename = `${originalFileName}-${timestamp}.json`;
+            } else {
+                filename = `bookmarks-${timestamp}.json`;
+            }
+
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'bookmarks.json';
+            link.download = filename;
             link.click();
+
+             // Save to history after successful export
+             const localTimestamp = getLocalTimestamp();
+             const uniqueKey = `${historyFilesPrefix}${filename}`; // Generate a unique key with the export filename
+             localStorage.setItem(uniqueKey, JSON.stringify(bookmarks, null, 2)); // Save file content to localStorage
+             historyFiles.push({ key: uniqueKey, name: filename }); // Add to history
+             updateHistoryFileList();
         }
 
         function updateHistoryFileList() {
@@ -340,6 +431,8 @@
         function loadHistoryFile(fileKey) {
             const content = localStorage.getItem(fileKey);
             if (content) {
+                historyFileName = fileKey.replace(historyFilesPrefix, '').split('-').slice(0, -1).join('-'); // Extract filename without timestamp
+                originalFileName = null; // Reset original file name
                 importBookmarks(content);
             }
         }
