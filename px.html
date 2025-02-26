@@ -34,7 +34,7 @@
             cursor: move;
             background-color: #fff;
             transition: background-color 0.2s;
-            touch-action: none; /* Important for touch devices */
+            touch-action: none;
             position: relative;
         }
 
@@ -264,7 +264,7 @@
 
             if (isTouchDevice) {
                 bookmarkDiv.addEventListener('touchstart', touchStart);
-                bookmarkDiv.addEventListener('touchmove', touchMove);
+                bookmarkDiv.addEventListener('touchmove', touchMove, { passive: false });
                 bookmarkDiv.addEventListener('touchend', touchEnd);
                 bookmarkDiv.addEventListener('touchcancel', touchEnd);
             } else {
@@ -321,10 +321,12 @@
             draggingElement.classList.add('dragging');
             const container = document.getElementById('bookmarksContainer');
             const containerRect = container.getBoundingClientRect();
-            dragOffsetY = event.touches[0].clientY - (draggingElement.getBoundingClientRect().top - containerRect.top);
+            const bookmarkRect = draggingElement.getBoundingClientRect();
+            dragOffsetY = event.touches[0].clientY - bookmarkRect.top;
             clearDropTargets();
 
-            draggingElement.style.width = containerRect.width - 20 + 'px'; // 减去 padding
+            draggingElement.style.width = (containerRect.width - 20) + 'px'; // 减去左右padding
+            draggingElement.style.left = '0px';
         }
 
         function touchMove(event) {
@@ -332,16 +334,15 @@
             if (!draggingElement) return;
 
             const container = document.getElementById('bookmarksContainer');
-            const touch = event.touches[0];
             const containerRect = container.getBoundingClientRect();
             const scrollTop = container.scrollTop;
+            const touchY = event.touches[0].clientY;
 
-            const newY = touch.clientY - containerRect.top + scrollTop - dragOffsetY;
-
+            // 计算拖动元素在容器内的相对位置
+            const newY = touchY - containerRect.top + scrollTop - dragOffsetY;
             draggingElement.style.top = newY + 'px';
-            draggingElement.style.position = 'absolute';
-            draggingElement.style.left = '0px';
 
+            // 查找最近的书签
             const bookmarks = Array.from(container.children);
             let closest = null;
             let closestDistance = Infinity;
@@ -350,6 +351,7 @@
                 if (bookmark === draggingElement) return;
                 const rect = bookmark.getBoundingClientRect();
                 const bookmarkTopRelative = rect.top - containerRect.top + scrollTop;
+                const bookmarkBottomRelative = bookmarkTopRelative + rect.height;
                 const centerY = bookmarkTopRelative + rect.height / 2;
                 const distance = Math.abs(newY - centerY);
 
@@ -361,19 +363,49 @@
 
             clearDropTargets();
             if (closest) {
-                closest.classList.add('drop-target');
+                const rect = closest.getBoundingClientRect();
+                const bookmarkTopRelative = rect.top - containerRect.top + scrollTop;
+                const bookmarkBottomRelative = bookmarkTopRelative + rect.height;
+
+                // 根据拖动位置决定插入点
+                if (newY < bookmarkTopRelative + rect.height / 2) {
+                    closest.classList.add('drop-target');
+                } else if (closest.nextSibling) {
+                    closest.nextSibling.classList.add('drop-target');
+                } else {
+                    closest.classList.add('drop-target');
+                }
+            } else if (bookmarks.length > 1) {
+                // 如果没有最近的书签，且列表不为空，放置到开头或结尾
+                const firstBookmark = bookmarks[0] === draggingElement ? bookmarks[1] : bookmarks[0];
+                const lastBookmark = bookmarks[bookmarks.length - 1] === draggingElement ? bookmarks[bookmarks.length - 2] : bookmarks[bookmarks.length - 1];
+                const firstTop = firstBookmark.getBoundingClientRect().top - containerRect.top + scrollTop;
+                const lastBottom = lastBookmark.getBoundingClientRect().bottom - containerRect.top + scrollTop;
+
+                if (newY < firstTop) {
+                    firstBookmark.classList.add('drop-target');
+                } else if (newY > lastBottom) {
+                    lastBookmark.classList.add('drop-target');
+                }
             }
         }
 
         function touchEnd(event) {
-            event.preventDefault();
             if (!draggingElement) return;
 
             const container = document.getElementById('bookmarksContainer');
             const dropTarget = document.querySelector('.drop-target');
 
-            if (dropTarget) {
-                container.insertBefore(draggingElement, dropTarget.nextSibling);
+            if (dropTarget && dropTarget !== draggingElement) {
+                const bookmarks = Array.from(container.children);
+                const dropIndex = bookmarks.indexOf(dropTarget);
+                const dragIndex = bookmarks.indexOf(draggingElement);
+
+                if (dropIndex > dragIndex) {
+                    container.insertBefore(draggingElement, dropTarget.nextSibling);
+                } else {
+                    container.insertBefore(draggingElement, dropTarget);
+                }
             }
 
             draggingElement.classList.remove('dragging');
