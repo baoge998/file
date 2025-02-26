@@ -43,6 +43,9 @@
 
         .bookmark.dragging {
             background-color: #e6e6fa; /* Light purple when dragging */
+            position: absolute;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .drop-target {
@@ -54,11 +57,44 @@
             min-height: 300px;
             position: relative;
             overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
         }
 
         #message { color: green; }
         .error { color: red; }
-        #controls { position: sticky; top: 0; background: white; padding: 10px; z-index: 10; }
+        #controls {
+            position: sticky;
+            top: 0;
+            background: white;
+            padding: 10px;
+            z-index: 10;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        #historyFileList {
+            margin-top: 10px;
+            display: none; /* Initially hidden */
+        }
+
+        #historyFileList.open {
+            display: block; /* Show when open */
+        }
+
+        .file-item {
+            margin: 5px 0;
+            padding: 5px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-item span { flex-grow: 1; }
+        .file-item button { margin-left: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -67,7 +103,9 @@
         <div id="controls">
             <input type="file" id="fileInput" accept=".json">
             <button id="exportButton">导出</button>
+            <button id="historyButton">历史文件</button>
         </div>
+        <div id="historyFileList"></div> <!-- 历史文件列表放在导入书签展开区的上方 -->
         <div id="message"></div>
         <div id="bookmarksContainer"></div>
     </div>
@@ -75,10 +113,17 @@
     <script>
         document.getElementById('fileInput').addEventListener('change', handleFileSelect);
         document.getElementById('exportButton').addEventListener('click', exportBookmarks);
+        document.getElementById('historyButton').addEventListener('click', toggleHistoryFiles);
 
         let draggingElement = null;
         let dragOffsetY = 0;
         let isTouchDevice = 'ontouchstart' in window; // Detect if the device supports touch
+        const historyFilesPrefix = 'bookmarkHistory_'; // Prefix for storing history files in localStorage
+
+        // Load history files from localStorage
+        let historyFiles = Object.keys(localStorage)
+            .filter(key => key.startsWith(historyFilesPrefix))
+            .map(key => ({ key: key, name: localStorage.getItem(key) ? key.replace(historyFilesPrefix, '') : '未命名' }));
 
         function handleFileSelect(event) {
             const file = event.target.files[0];
@@ -87,6 +132,11 @@
                 reader.onload = function(e) {
                     const content = e.target.result;
                     importBookmarks(content);
+                    const localTimestamp = getLocalTimestamp(); // Get local timestamp in YYYYMMDDHHmm format
+                    const uniqueKey = `${historyFilesPrefix}${file.name}-${localTimestamp}`; // Generate a unique key
+                    localStorage.setItem(uniqueKey, content); // Save file content to localStorage
+                    historyFiles.push({ key: uniqueKey, name: `${file.name}-${localTimestamp}` }); // Add to history
+                    updateHistoryFileList();
                 };
                 reader.readAsText(file);
             }
@@ -180,6 +230,17 @@
             const newY = event.touches[0].clientY - dragOffsetY;
             draggingElement.style.top = newY + 'px';
             draggingElement.style.position = 'absolute';
+            draggingElement.style.left = container.offsetLeft + 'px';
+
+            // Scroll if near the top or bottom
+            const containerRect = container.getBoundingClientRect();
+            const scrollThreshold = 50;
+
+            if (newY - containerRect.top < scrollThreshold) {
+                container.scrollTop -= 5;
+            } else if (containerRect.bottom - (newY + draggingElement.offsetHeight) < scrollThreshold) {
+                container.scrollTop += 5;
+            }
 
             // Find the closest drop target
             const bookmarks = Array.from(container.children);
@@ -217,6 +278,7 @@
             draggingElement.classList.remove('dragging');
             draggingElement.style.top = '';
             draggingElement.style.position = '';
+            draggingElement.style.left = '';
             draggingElement = null;
             clearDropTargets();
         }
@@ -244,6 +306,54 @@
             link.href = URL.createObjectURL(blob);
             link.download = 'bookmarks.json';
             link.click();
+        }
+
+        function updateHistoryFileList() {
+            const list = document.getElementById('historyFileList');
+            list.innerHTML = historyFiles
+                .map(({ key, name }) => `
+                    <div class="file-item">
+                        <span>${name}</span>
+                        <button onclick="loadHistoryFile('${key}')">导入</button>
+                        <button onclick="deleteHistoryFile('${key}')">删除</button>
+                    </div>
+                `)
+                .join('');
+        }
+
+        function toggleHistoryFiles() {
+            const list = document.getElementById('historyFileList');
+            list.classList.toggle('open');
+            if (list.classList.contains('open')) {
+                updateHistoryFileList();
+            }
+        }
+
+        function deleteHistoryFile(fileKey) {
+            if (localStorage.getItem(fileKey)) {
+                localStorage.removeItem(fileKey);
+                historyFiles = historyFiles.filter(file => file.key !== fileKey);
+                updateHistoryFileList();
+            }
+        }
+
+        function loadHistoryFile(fileKey) {
+            const content = localStorage.getItem(fileKey);
+            if (content) {
+                importBookmarks(content);
+            }
+        }
+
+        // Get local timestamp in YYYYMMDDHHmm format
+        function getLocalTimestamp() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+            const day = String(now.getDate()).padStart(2, '0');
+            const hour = String(now.getHours()).padStart(2, '0');
+            const minute = String(now.getMinutes()).padStart(2, '0');
+
+            return `${year}${month}${day}${hour}${minute}`; // YYYYMMDDHHmm
         }
     </script>
 </body>
