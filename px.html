@@ -58,7 +58,7 @@
             margin: 20px 0;
             min-height: 300px;
             position: relative;
-            overflow-y: auto; /* Changed back to auto to allow scrolling */
+            overflow-y: auto; /* Allow scrolling */
             border: 1px solid #ccc;
             padding: 10px;
         }
@@ -108,6 +108,8 @@
         #historyFileList {
             margin-top: 10px;
             display: none;
+            overflow-y: auto; /* Allow scrolling if needed */
+            max-height: 200px; /* Limit the height */
         }
 
         #historyFileList.open {
@@ -122,6 +124,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap; /* Allow wrapping if necessary */
         }
 
         .file-item span { flex-grow: 1; }
@@ -164,6 +167,23 @@
 
         #historyButton:hover {
             background-color: #d32f2f;
+        }
+
+        /* Responsive adjustments */
+        @media screen and (max-width: 600px) {
+            #panel {
+                width: 90%;
+            }
+            #fileInputLabel {
+                padding: 8px 16px;
+            }
+            button {
+                padding: 8px 16px;
+            }
+            .file-item button {
+                margin-left: 5px;
+                padding: 5px 10px;
+            }
         }
     </style>
 </head>
