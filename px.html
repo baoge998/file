@@ -58,7 +58,7 @@
             margin: 20px 0;
             min-height: 300px;
             position: relative;
-            overflow-y: hidden; /* Hide the vertical scrollbar */
+            overflow-y: auto; /* Changed back to auto to allow scrolling */
             border: 1px solid #ccc;
             padding: 10px;
         }
@@ -329,6 +329,28 @@
             draggingElement.style.top = newY + 'px';
             draggingElement.style.position = 'absolute';
             draggingElement.style.left = container.offsetLeft + 'px';
+
+            // Autoscroll logic
+            const containerRect = container.getBoundingClientRect();
+            let scrollDirection = 0;
+
+            if (newY - containerRect.top < scrollThreshold) {
+                scrollDirection = 1; // Scroll up
+            } else if (containerRect.bottom - (newY + draggingElement.offsetHeight) < scrollThreshold) {
+                scrollDirection = 2; // Scroll down
+            }
+
+            clearInterval(autoScrollInterval);
+
+            if (scrollDirection !== 0) {
+                autoScrollInterval = setInterval(() => {
+                    if (scrollDirection === 1) {
+                        container.scrollTop -= scrollSpeed;
+                    } else if (scrollDirection === 2) {
+                        container.scrollTop += scrollSpeed;
+                    }
+                }, 20);
+            }
 
             // Find the closest drop target and add the purple line
             const bookmarks = Array.from(container.children);
