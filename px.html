@@ -34,7 +34,7 @@
             cursor: move;
             background-color: #fff;
             transition: background-color 0.2s;
-            touch-action: none;  /* Important for touch devices */
+            touch-action: none; /* Important for touch devices */
         }
 
         .bookmark:hover {
@@ -306,28 +306,18 @@
 
         // Touch device event handlers
         function touchStart(event) {
-           event.preventDefault();
-           draggingElement = event.target;
-           draggingElement.classList.add('dragging');
-           dragOffsetY = event.touches[0].clientY - draggingElement.offsetTop;
-           clearInterval(autoScrollInterval);
-           clearDropTargets(); // Clear any existing drop targets
+            event.preventDefault();
+            draggingElement = event.target;
+            draggingElement.classList.add('dragging');
+            dragOffsetY = event.touches[0].clientY - draggingElement.offsetTop;
+            clearInterval(autoScrollInterval);
+            clearDropTargets(); // Clear any existing drop targets
 
             const containerRect = document.getElementById('bookmarksContainer').getBoundingClientRect();
             draggingElement.style.width = containerRect.width + 'px';
 
-           // Save the initial position of the element
-           initialIndex = Array.from(event.target.parentNode.children).indexOf(event.target);
-
-           // Calculate the position of the dragged element based on the container
-           const bookmarksContainer = document.getElementById('bookmarksContainer');
-           const containerTop = bookmarksContainer.getBoundingClientRect().top;
-           const dragTop = event.touches[0].clientY - containerTop - dragOffsetY;
-
-           // Ensure that the element is moved to the correct position
-           draggingElement.style.top = dragTop + 'px';
-           draggingElement.style.position = 'absolute';
-           draggingElement.style.left = bookmarksContainer.offsetLeft + 'px';
+            // Save the initial position of the element
+            initialIndex = Array.from(event.target.parentNode.children).indexOf(event.target);
         }
 
         function touchMove(event) {
@@ -338,20 +328,19 @@
             const touch = event.touches[0];
             const newY = touch.clientY - dragOffsetY;
 
+            // Update the dragged element's position
             draggingElement.style.top = newY + 'px';
             draggingElement.style.position = 'absolute';
             draggingElement.style.left = container.offsetLeft + 'px';
 
             // Autoscroll logic
             const containerRect = container.getBoundingClientRect();
-
-            // Determine if near the top or bottom
-            let scrollDirection = 0; // 0: no scroll, 1: scroll up, 2: scroll down
+            let scrollDirection = 0;
 
             if (newY - containerRect.top < scrollThreshold) {
-                scrollDirection = 1; // Scroll up
+                scrollDirection = 1;
             } else if (containerRect.bottom - (newY + draggingElement.offsetHeight) < scrollThreshold) {
-                scrollDirection = 2; // Scroll down
+                scrollDirection = 2;
             }
 
             clearInterval(autoScrollInterval);
@@ -366,24 +355,24 @@
                 }, 20);
             }
 
-           // Find the closest drop target (for mobile)
-           const bookmarks = Array.from(container.children);
-           let closest = null;
-           let closestDistance = Infinity;
+            // Find the closest drop target and add the purple line
+            const bookmarks = Array.from(container.children);
+            let closest = null;
+            let closestDistance = Infinity;
 
-           bookmarks.forEach(bookmark => {
-               if (bookmark === draggingElement) return; // Skip the dragged element itself
-               const rect = bookmark.getBoundingClientRect();
-               const centerY = rect.top + rect.height / 2;
-               const distance = Math.abs(newY - centerY);
+            bookmarks.forEach(bookmark => {
+                if (bookmark === draggingElement) return;
+                const rect = bookmark.getBoundingClientRect();
+                const centerY = rect.top + rect.height / 2;
+                const distance = Math.abs(newY - centerY);
 
-               if (distance < closestDistance) {
-                   closestDistance = distance;
-                   closest = bookmark;
-               }
-           });
+                if (distance < closestDistance) {
+                    closestDistance = distance;
+                    closest = bookmark;
+                }
+            });
 
-            clearDropTargets();
+            clearDropTargets(); // Clear previous drop targets
 
             if (closest) {
                 closest.classList.add('drop-target'); // Add drop target to the closest element
@@ -398,11 +387,7 @@
             const dropTarget = document.querySelector('.drop-target');
 
             if (dropTarget) {
-                if (dropTarget === container) {
-                    container.appendChild(draggingElement);
-                } else {
-                    container.insertBefore(draggingElement, dropTarget.nextSibling);
-                }
+                container.insertBefore(draggingElement, dropTarget.nextSibling);
             }
 
             draggingElement.classList.remove('dragging');
@@ -416,10 +401,10 @@
         }
 
         function clearDropTargets() {
-           const targets = document.querySelectorAll('.drop-target');
-           targets.forEach(target => {
-               target.classList.remove('drop-target');
-           });
+            const targets = document.querySelectorAll('.drop-target');
+            targets.forEach(target => {
+                target.classList.remove('drop-target');
+            });
         }
 
         function exportBookmarks() {
