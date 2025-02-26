@@ -50,15 +50,15 @@
         }
 
         .drop-target {
-            /* Make the drop target a purple line */
-            border-bottom: 2px solid purple;
+            /* Make the drop target a bold purple line */
+            border-bottom: 4px solid purple;
         }
 
         #bookmarksContainer {
             margin: 20px 0;
             min-height: 300px;
             position: relative;
-            overflow-y: auto;
+            overflow-y: hidden; /* Hide the vertical scrollbar */
             border: 1px solid #ccc;
             padding: 10px;
         }
@@ -315,9 +315,6 @@
 
             const containerRect = document.getElementById('bookmarksContainer').getBoundingClientRect();
             draggingElement.style.width = containerRect.width + 'px';
-
-            // Save the initial position of the element
-            initialIndex = Array.from(event.target.parentNode.children).indexOf(event.target);
         }
 
         function touchMove(event) {
@@ -332,28 +329,6 @@
             draggingElement.style.top = newY + 'px';
             draggingElement.style.position = 'absolute';
             draggingElement.style.left = container.offsetLeft + 'px';
-
-            // Autoscroll logic
-            const containerRect = container.getBoundingClientRect();
-            let scrollDirection = 0;
-
-            if (newY - containerRect.top < scrollThreshold) {
-                scrollDirection = 1;
-            } else if (containerRect.bottom - (newY + draggingElement.offsetHeight) < scrollThreshold) {
-                scrollDirection = 2;
-            }
-
-            clearInterval(autoScrollInterval);
-
-            if (scrollDirection !== 0) {
-                autoScrollInterval = setInterval(() => {
-                    if (scrollDirection === 1) {
-                        container.scrollTop -= scrollSpeed;
-                    } else if (scrollDirection === 2) {
-                        container.scrollTop += scrollSpeed;
-                    }
-                }, 20);
-            }
 
             // Find the closest drop target and add the purple line
             const bookmarks = Array.from(container.children);
