@@ -35,6 +35,7 @@
             background-color: #fff;
             transition: background-color 0.2s;
             touch-action: none; /* Important for touch devices */
+            position: relative;
         }
 
         .bookmark:hover {
@@ -46,11 +47,10 @@
             position: absolute;
             z-index: 1000;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            opacity: 0.8; /* Make the dragged item slightly transparent */
+            opacity: 0.8;
         }
 
         .drop-target {
-            /* Make the drop target a bold purple line */
             border-bottom: 4px solid purple;
         }
 
@@ -58,7 +58,7 @@
             margin: 20px 0;
             min-height: 300px;
             position: relative;
-            overflow-y: auto; /* Allow scrolling */
+            overflow-y: auto;
             border: 1px solid #ccc;
             padding: 10px;
         }
@@ -108,8 +108,8 @@
         #historyFileList {
             margin-top: 10px;
             display: none;
-            overflow-y: auto; /* Allow scrolling if needed */
-            max-height: 200px; /* Limit the height */
+            overflow-y: auto;
+            max-height: 200px;
         }
 
         #historyFileList.open {
@@ -124,7 +124,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap; /* Allow wrapping if necessary */
+            flex-wrap: wrap;
         }
 
         .file-item span { flex-grow: 1; }
@@ -160,6 +160,7 @@
         #exportButton:hover {
             background-color: #007B9A;
         }
+
         #historyButton {
             background-color: #f44336;
         }
@@ -168,7 +169,6 @@
             background-color: #d32f2f;
         }
 
-        /* Responsive adjustments */
         @media screen and (max-width: 600px) {
             #panel {
                 width: 90%;
@@ -212,7 +212,6 @@
         let originalFileName = null;
         let historyFileName = null;
 
-        // Load history files from localStorage
         let historyFiles = Object.keys(localStorage)
             .filter(key => key.startsWith(historyFilesPrefix))
             .map(key => ({ key: key, name: localStorage.getItem(key) ? key.replace(historyFilesPrefix, '') : '未命名' }));
@@ -263,12 +262,11 @@
             bookmarkDiv.innerText = bookmark.name + ' - ' + bookmark.url;
             bookmarkDiv.setAttribute('draggable', 'true');
 
-            // Add event listeners based on device type
             if (isTouchDevice) {
                 bookmarkDiv.addEventListener('touchstart', touchStart);
                 bookmarkDiv.addEventListener('touchmove', touchMove);
                 bookmarkDiv.addEventListener('touchend', touchEnd);
-                bookmarkDiv.addEventListener('touchcancel', touchEnd); // Add touchcancel
+                bookmarkDiv.addEventListener('touchcancel', touchEnd);
             } else {
                 bookmarkDiv.addEventListener('dragstart', dragStart);
                 bookmarkDiv.addEventListener('dragover', allowDrop);
@@ -279,15 +277,11 @@
             container.appendChild(bookmarkDiv);
         }
 
-        // Desktop drag-and-drop event handlers
+        // Desktop drag-and-drop handlers
         function dragStart(event) {
             draggingElement = event.target;
-            event.dataTransfer.setData('text/plain', null); // Required for Firefox
+            event.dataTransfer.setData('text/plain', null);
             draggingElement.classList.add('dragging');
-        }
-
-        function dragOver(event) {
-            event.preventDefault(); // Allow the drop
         }
 
         function allowDrop(event) {
@@ -309,7 +303,7 @@
             }
             clearDropTargets();
             draggingElement.classList.remove('dragging');
-            draggingElement = null; // Reset
+            draggingElement = null;
         }
 
         function dragEnd(event) {
@@ -320,20 +314,17 @@
             }
         }
 
-        // Touch device event handlers
+        // Touch device handlers
         function touchStart(event) {
             event.preventDefault();
             draggingElement = event.target;
             draggingElement.classList.add('dragging');
+            const container = document.getElementById('bookmarksContainer');
+            const containerRect = container.getBoundingClientRect();
+            dragOffsetY = event.touches[0].clientY - (draggingElement.getBoundingClientRect().top - containerRect.top);
+            clearDropTargets();
 
-            // Calculate dragOffsetY relative to the *container*
-            const containerRect = document.getElementById('bookmarksContainer').getBoundingClientRect();
-            dragOffsetY = event.touches[0].clientY - draggingElement.getBoundingClientRect().top + containerRect.top;
-
-            clearDropTargets(); // Clear any existing drop targets
-
-            const containerRect2 = document.getElementById('bookmarksContainer').getBoundingClientRect();
-            draggingElement.style.width = containerRect2.width + 'px';
+            draggingElement.style.width = containerRect.width - 20 + 'px'; // 减去 padding
         }
 
         function touchMove(event) {
@@ -342,19 +333,15 @@
 
             const container = document.getElementById('bookmarksContainer');
             const touch = event.touches[0];
-
-            // Get the container's bounding rectangle
             const containerRect = container.getBoundingClientRect();
+            const scrollTop = container.scrollTop;
 
-            // Calculate the new Y position relative to the *container*
-            const newY = touch.clientY - containerRect.top - dragOffsetY;  // Subtract container's top offset
+            const newY = touch.clientY - containerRect.top + scrollTop - dragOffsetY;
 
-            // Update the dragged element's position
             draggingElement.style.top = newY + 'px';
             draggingElement.style.position = 'absolute';
-            draggingElement.style.left = containerRect.left + 'px'; // Use containerRect.left
+            draggingElement.style.left = '0px';
 
-            // Find the closest drop target and add the purple line
             const bookmarks = Array.from(container.children);
             let closest = null;
             let closestDistance = Infinity;
@@ -362,7 +349,8 @@
             bookmarks.forEach(bookmark => {
                 if (bookmark === draggingElement) return;
                 const rect = bookmark.getBoundingClientRect();
-                const centerY = rect.top + rect.height / 2 - containerRect.top; // Account for container scroll
+                const bookmarkTopRelative = rect.top - containerRect.top + scrollTop;
+                const centerY = bookmarkTopRelative + rect.height / 2;
                 const distance = Math.abs(newY - centerY);
 
                 if (distance < closestDistance) {
@@ -371,10 +359,9 @@
                 }
             });
 
-            clearDropTargets(); // Clear previous drop targets
-
+            clearDropTargets();
             if (closest) {
-                closest.classList.add('drop-target'); // Add drop target to the closest element
+                closest.classList.add('drop-target');
             }
         }
 
@@ -393,15 +380,14 @@
             draggingElement.style.top = '';
             draggingElement.style.position = '';
             draggingElement.style.left = '';
+            draggingElement.style.width = '';
             draggingElement = null;
             clearDropTargets();
         }
 
         function clearDropTargets() {
             const targets = document.querySelectorAll('.drop-target');
-            targets.forEach(target => {
-                target.classList.remove('drop-target');
-            });
+            targets.forEach(target => target.classList.remove('drop-target'));
         }
 
         function exportBookmarks() {
@@ -417,26 +403,21 @@
 
             const blob = new Blob([JSON.stringify(bookmarks, null, 2)], { type: 'application/json' });
             const timestamp = getLocalTimestamp();
-            let filename;
-            if (historyFileName) {
-                filename = `${historyFileName}-${timestamp}.json`;
-            } else if (originalFileName) {
-                filename = `${originalFileName}-${timestamp}.json`;
-            } else {
-                filename = `bookmarks-${timestamp}.json`;
-            }
+            let filename = historyFileName 
+                ? `${historyFileName}-${timestamp}.json`
+                : originalFileName 
+                ? `${originalFileName}-${timestamp}.json`
+                : `bookmarks-${timestamp}.json`;
 
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = filename;
             link.click();
 
-             // Save to history after successful export
-             const localTimestamp = getLocalTimestamp();
-             const uniqueKey = `${historyFilesPrefix}${filename}`; // Generate a unique key with the export filename
-             localStorage.setItem(uniqueKey, JSON.stringify(bookmarks, null, 2)); // Save file content to localStorage
-             historyFiles.push({ key: uniqueKey, name: filename }); // Add to history
-             updateHistoryFileList();
+            const uniqueKey = `${historyFilesPrefix}${filename}`;
+            localStorage.setItem(uniqueKey, JSON.stringify(bookmarks, null, 2));
+            historyFiles.push({ key: uniqueKey, name: filename });
+            updateHistoryFileList();
         }
 
         function updateHistoryFileList() {
@@ -460,17 +441,21 @@
             }
         }
 
-        function loadHistoryFile(key) {
-            const fileContent = localStorage.getItem(key);
-            if (fileContent) {
-                importBookmarks(fileContent);
+        function deleteHistoryFile(fileKey) {
+            if (localStorage.getItem(fileKey)) {
+                localStorage.removeItem(fileKey);
+                historyFiles = historyFiles.filter(file => file.key !== fileKey);
+                updateHistoryFileList();
             }
         }
 
-        function deleteHistoryFile(key) {
-            localStorage.removeItem(key);
-            historyFiles = historyFiles.filter(file => file.key !== key);
-            updateHistoryFileList();
+        function loadHistoryFile(fileKey) {
+            const content = localStorage.getItem(fileKey);
+            if (content) {
+                historyFileName = fileKey.replace(historyFilesPrefix, '').split('-').slice(0, -1).join('-');
+                originalFileName = null;
+                importBookmarks(content);
+            }
         }
 
         function getLocalTimestamp() {
@@ -480,8 +465,7 @@
             const day = String(now.getDate()).padStart(2, '0');
             const hour = String(now.getHours()).padStart(2, '0');
             const minute = String(now.getMinutes()).padStart(2, '0');
-            const second = String(now.getSeconds()).padStart(2, '0');
-            return `${year}-${month}-${day}-${hour}${minute}${second}`;
+            return `${year}${month}${day}${hour}${minute}`;
         }
     </script>
 </body>
