@@ -212,9 +212,6 @@
         const historyFilesPrefix = 'bookmarkHistory_';
         let originalFileName = null;
         let historyFileName = null;
-        let scrollSpeed = 10;
-        let scrollThreshold = 50;
-        let autoScrollInterval;
 
         // Load history files from localStorage
         let historyFiles = Object.keys(localStorage)
@@ -330,7 +327,6 @@
             draggingElement = event.target;
             draggingElement.classList.add('dragging');
             dragOffsetY = event.touches[0].clientY - draggingElement.offsetTop;
-            clearInterval(autoScrollInterval);
             clearDropTargets(); // Clear any existing drop targets
 
             const containerRect = document.getElementById('bookmarksContainer').getBoundingClientRect();
