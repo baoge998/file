@@ -34,7 +34,7 @@
             cursor: move;
             background-color: #fff;
             transition: background-color 0.2s;
-            touch-action: none;
+            touch-action: none;  /* Important for touch devices */
         }
 
         .bookmark:hover {
@@ -46,10 +46,12 @@
             position: absolute;
             z-index: 1000;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            opacity: 0.8; /* Make the dragged item slightly transparent */
         }
 
         .drop-target {
-            background-color: #fffacd;
+            /* Make the drop target a purple line */
+            border-bottom: 2px solid purple;
         }
 
         #bookmarksContainer {
@@ -76,12 +78,12 @@
         }
 
         #fileInput {
-            display: none; /* Hide the file input */
+            display: none;
         }
 
         #fileInputLabel {
             display: inline-block;
-            background-color: #4CAF50; /* Green */
+            background-color: #4CAF50;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -95,21 +97,21 @@
         }
 
         #fileInputLabel:hover {
-            background-color: #45a049; /* Darker green on hover */
-            transform: scale(1.05); /* Slight scale effect on hover */
+            background-color: #45a049;
+            transform: scale(1.05);
         }
 
         #fileInputLabel:active {
-            transform: scale(0.95); /* Slight scale effect on click */
+            transform: scale(0.95);
         }
 
         #historyFileList {
             margin-top: 10px;
-            display: none; /* Initially hidden */
+            display: none;
         }
 
         #historyFileList.open {
-            display: block; /* Show when open */
+            display: block;
         }
 
         .file-item {
@@ -125,9 +127,8 @@
         .file-item span { flex-grow: 1; }
         .file-item button { margin-left: 10px; cursor: pointer; }
 
-        /* Button styling */
         button {
-            background-color: #4CAF50; /* Green */
+            background-color: #4CAF50;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -141,28 +142,28 @@
         }
 
         button:hover {
-            background-color: #45a049; /* Darker green on hover */
-            transform: scale(1.05); /* Slight scale effect on hover */
+            background-color: #45a049;
+            transform: scale(1.05);
         }
 
         button:active {
-            transform: scale(0.95); /* Slight scale effect on click */
+            transform: scale(0.95);
         }
 
         #exportButton {
-            background-color: #008CBA; /* Blue */
+            background-color: #008CBA;
         }
 
         #exportButton:hover {
-            background-color: #007B9A; /* Darker blue on hover */
+            background-color: #007B9A;
         }
 
         #historyButton {
-            background-color: #f44336; /* Red */
+            background-color: #f44336;
         }
 
         #historyButton:hover {
-            background-color: #d32f2f; /* Darker red on hover */
+            background-color: #d32f2f;
         }
     </style>
 </head>
@@ -187,14 +188,13 @@
 
         let draggingElement = null;
         let dragOffsetY = 0;
-        let isTouchDevice = 'ontouchstart' in window; // Detect if the device supports touch
-        const historyFilesPrefix = 'bookmarkHistory_'; // Prefix for storing history files in localStorage
-        let originalFileName = null; // Store the original file name
-        let historyFileName = null; // Store the original file name from history file
+        let isTouchDevice = 'ontouchstart' in window;
+        const historyFilesPrefix = 'bookmarkHistory_';
+        let originalFileName = null;
+        let historyFileName = null;
         let scrollSpeed = 10;
         let scrollThreshold = 50;
         let autoScrollInterval;
-
 
         // Load history files from localStorage
         let historyFiles = Object.keys(localStorage)
@@ -204,8 +204,8 @@
         function handleFileSelect(event) {
             const file = event.target.files[0];
             if (file) {
-                originalFileName = file.name.substring(0, file.name.lastIndexOf('.')); // Extract file name without extension
-                historyFileName = null; // Reset history file name
+                originalFileName = file.name.substring(0, file.name.lastIndexOf('.'));
+                historyFileName = null;
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const content = e.target.result;
@@ -219,7 +219,7 @@
             try {
                 const bookmarksData = JSON.parse(jsonContent);
                 const container = document.getElementById('bookmarksContainer');
-                container.innerHTML = ''; // Clear the container
+                container.innerHTML = '';
 
                 if (Array.isArray(bookmarksData)) {
                     bookmarksData.forEach(bookmark => {
@@ -257,6 +257,7 @@
                 bookmarkDiv.addEventListener('dragstart', dragStart);
                 bookmarkDiv.addEventListener('dragover', allowDrop);
                 bookmarkDiv.addEventListener('drop', drop);
+                bookmarkDiv.addEventListener('dragend', dragEnd);
             }
 
             container.appendChild(bookmarkDiv);
@@ -265,58 +266,84 @@
         // Desktop drag-and-drop event handlers
         function dragStart(event) {
             draggingElement = event.target;
-            event.dataTransfer.setData('text/plain', null);
+            event.dataTransfer.setData('text/plain', null); // Required for Firefox
             draggingElement.classList.add('dragging');
         }
 
         function dragOver(event) {
-            event.preventDefault();
+            event.preventDefault(); // Allow the drop
         }
 
         function allowDrop(event) {
             event.preventDefault();
+            clearDropTargets();
             if (event.target.classList.contains('bookmark')) {
-                clearDropTargets();
                 event.target.classList.add('drop-target');
             }
         }
 
         function drop(event) {
             event.preventDefault();
+            if (!draggingElement) return;
+
             const dropTarget = event.target;
-            if (dropTarget.classList.contains('bookmark') && draggingElement) {
+            if (dropTarget.classList.contains('bookmark')) {
                 const container = document.getElementById('bookmarksContainer');
                 container.insertBefore(draggingElement, dropTarget.nextSibling);
+            }
+            clearDropTargets();
+            draggingElement.classList.remove('dragging');
+            draggingElement = null; // Reset
+        }
+
+        function dragEnd(event) {
+            clearDropTargets();
+            if (draggingElement) {
                 draggingElement.classList.remove('dragging');
-                clearDropTargets();
+                draggingElement = null;
             }
         }
 
         // Touch device event handlers
         function touchStart(event) {
-            event.preventDefault();
-            draggingElement = event.target;
-            draggingElement.classList.add('dragging');
-            dragOffsetY = event.touches[0].clientY - draggingElement.offsetTop;
+           event.preventDefault();
+           draggingElement = event.target;
+           draggingElement.classList.add('dragging');
+           dragOffsetY = event.touches[0].clientY - draggingElement.offsetTop;
+           clearInterval(autoScrollInterval);
+           clearDropTargets(); // Clear any existing drop targets
 
-             // Clear any existing auto-scroll interval
-             clearInterval(autoScrollInterval);
+            const containerRect = document.getElementById('bookmarksContainer').getBoundingClientRect();
+            draggingElement.style.width = containerRect.width + 'px';
+
+           // Save the initial position of the element
+           initialIndex = Array.from(event.target.parentNode.children).indexOf(event.target);
+
+           // Calculate the position of the dragged element based on the container
+           const bookmarksContainer = document.getElementById('bookmarksContainer');
+           const containerTop = bookmarksContainer.getBoundingClientRect().top;
+           const dragTop = event.touches[0].clientY - containerTop - dragOffsetY;
+
+           // Ensure that the element is moved to the correct position
+           draggingElement.style.top = dragTop + 'px';
+           draggingElement.style.position = 'absolute';
+           draggingElement.style.left = bookmarksContainer.offsetLeft + 'px';
         }
 
         function touchMove(event) {
-           event.preventDefault();
-           if (!draggingElement) return;
+            event.preventDefault();
+            if (!draggingElement) return;
 
-           const container = document.getElementById('bookmarksContainer');
-           const touch = event.touches[0];
-           const newY = touch.clientY - dragOffsetY;
+            const container = document.getElementById('bookmarksContainer');
+            const touch = event.touches[0];
+            const newY = touch.clientY - dragOffsetY;
 
-           draggingElement.style.top = newY + 'px';
-           draggingElement.style.position = 'absolute';
-           draggingElement.style.left = container.offsetLeft + 'px';
+            draggingElement.style.top = newY + 'px';
+            draggingElement.style.position = 'absolute';
+            draggingElement.style.left = container.offsetLeft + 'px';
 
-           // Autoscroll logic
-           const containerRect = container.getBoundingClientRect();
+            // Autoscroll logic
+            const containerRect = container.getBoundingClientRect();
 
             // Determine if near the top or bottom
             let scrollDirection = 0; // 0: no scroll, 1: scroll up, 2: scroll down
@@ -327,69 +354,72 @@
                 scrollDirection = 2; // Scroll down
             }
 
-            // Clear any existing auto-scroll interval
             clearInterval(autoScrollInterval);
 
             if (scrollDirection !== 0) {
-                // Set auto-scroll interval
                 autoScrollInterval = setInterval(() => {
                     if (scrollDirection === 1) {
                         container.scrollTop -= scrollSpeed;
                     } else if (scrollDirection === 2) {
                         container.scrollTop += scrollSpeed;
                     }
-                }, 20); // Adjust interval for smoother scrolling
+                }, 20);
             }
 
-           // Find the closest drop target
+           // Find the closest drop target (for mobile)
            const bookmarks = Array.from(container.children);
            let closest = null;
            let closestDistance = Infinity;
 
            bookmarks.forEach(bookmark => {
-               if (bookmark === draggingElement) return;
+               if (bookmark === draggingElement) return; // Skip the dragged element itself
                const rect = bookmark.getBoundingClientRect();
                const centerY = rect.top + rect.height / 2;
                const distance = Math.abs(newY - centerY);
+
                if (distance < closestDistance) {
                    closestDistance = distance;
                    closest = bookmark;
                }
            });
 
-           if (closest) {
-               clearDropTargets();
-               closest.classList.add('drop-target');
-           }
+            clearDropTargets();
+
+            if (closest) {
+                closest.classList.add('drop-target'); // Add drop target to the closest element
+            }
         }
 
         function touchEnd(event) {
-           event.preventDefault();
-           if (!draggingElement) return;
+            event.preventDefault();
+            if (!draggingElement) return;
 
-           const container = document.getElementById('bookmarksContainer');
-           const dropTarget = document.querySelector('.drop-target');
+            const container = document.getElementById('bookmarksContainer');
+            const dropTarget = document.querySelector('.drop-target');
 
-           if (dropTarget) {
-               container.insertBefore(draggingElement, dropTarget.nextSibling);
-           }
+            if (dropTarget) {
+                if (dropTarget === container) {
+                    container.appendChild(draggingElement);
+                } else {
+                    container.insertBefore(draggingElement, dropTarget.nextSibling);
+                }
+            }
 
-           draggingElement.classList.remove('dragging');
-           draggingElement.style.top = '';
-           draggingElement.style.position = '';
-           draggingElement.style.left = '';
-           draggingElement = null;
-           clearDropTargets();
+            draggingElement.classList.remove('dragging');
+            draggingElement.style.top = '';
+            draggingElement.style.position = '';
+            draggingElement.style.left = '';
+            draggingElement = null;
+            clearDropTargets();
 
-           // Clear auto-scroll interval
-           clearInterval(autoScrollInterval);
+            clearInterval(autoScrollInterval);
         }
 
         function clearDropTargets() {
-            const targets = document.querySelectorAll('.drop-target');
-            targets.forEach(target => {
-                target.classList.remove('drop-target');
-            });
+           const targets = document.querySelectorAll('.drop-target');
+           targets.forEach(target => {
+               target.classList.remove('drop-target');
+           });
         }
 
         function exportBookmarks() {
@@ -469,12 +499,12 @@
         function getLocalTimestamp() {
             const now = new Date();
             const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0'); // Month is 0-indexed
+            const month = String(now.getMonth() + 1).padStart(2, '0');
             const day = String(now.getDate()).padStart(2, '0');
             const hour = String(now.getHours()).padStart(2, '0');
             const minute = String(now.getMinutes()).padStart(2, '0');
 
-            return `${year}${month}${day}${hour}${minute}`; // YYYYMMDDHHmm
+            return `${year}${month}${day}${hour}${minute}`;
         }
     </script>
 </body>
